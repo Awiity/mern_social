@@ -40,6 +40,7 @@ const userMongooseSchema = new mongoose.Schema<IUserDocument>({
 
 });
 
+// Hashing password right before saving to DB
 userMongooseSchema.pre<IUserDocument>('save', async function (next) {
     //if (!this.isModified('password')) return next(); // TODO: figure out what isModified method refers to.
 
