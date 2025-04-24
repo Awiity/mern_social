@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { userSchema, IUserDocument, IUser, UserModel } from "../models/user.model";
 import mongoose from "mongoose";
 import { ApiError } from "../utils/apiError";
+import { generateToken, verifyToken } from "../utils/jwt";
 
 export const UserController = {
 
@@ -77,7 +78,6 @@ export const UserController = {
             ApiError.handle(error, res);
         }
     }
-
 }
 
 /* TODO:

@@ -1,12 +1,20 @@
 import { Router } from "express";
 import { UserController } from "../controllers/user.controller";
 
-const router = Router();
+const userRoutes = Router();
 
-router.get('/api/users', UserController.getAll);
-router.get('/api/users/:id', UserController.getById);
-router.post('/api/users', UserController.create);
-router.put('/api/users/:id', UserController.update);
-router.delete('/api/users/:id', UserController.delete);
+userRoutes.get('/users', UserController.getAll);
+userRoutes.get('/users/:id', UserController.getById);
+userRoutes.post('/users', UserController.create);
+userRoutes.put('/users/:id', UserController.update);
+userRoutes.delete('/users/:id', UserController.delete);
 
-export default router;
+import { AuthController } from "../controllers/auth.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
+
+userRoutes.post('/auth/login', AuthController.login);
+userRoutes.post('/auth/logout', authMiddleware(), AuthController.logout);
+userRoutes.post('/auth/refresh', AuthController.refreshToken);
+
+
+export default userRoutes;

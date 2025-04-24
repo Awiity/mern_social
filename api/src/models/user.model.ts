@@ -23,7 +23,8 @@ export type IUser = z.infer<typeof userSchema>;
 
 export interface IUserDocument extends IUser {
     _id: string,
-    comparePassword(candidatePassword: string): Promise<boolean>;
+    comparePassword(candidatePassword: string): Promise<boolean>,
+    refreshToken?: string
 };
 
 const userMongooseSchema = new mongoose.Schema<IUserDocument>({
@@ -37,6 +38,7 @@ const userMongooseSchema = new mongoose.Schema<IUserDocument>({
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
+    refreshToken: { type: String }
 
 });
 
