@@ -4,6 +4,7 @@ import userRoutes from './routes/user.routes';
 import { connectDB } from './config/db';
 import cookieParser from 'cookie-parser';
 import { json } from 'stream/consumers';
+import postRoutes from './routes/post.routes';
 
 const cors = require('cors');
 
@@ -20,6 +21,7 @@ app.use(cookieParser());
 connectDB();
 
 app.use('/api', userRoutes);
+app.use('/api', postRoutes)
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
