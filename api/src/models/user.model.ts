@@ -56,7 +56,7 @@ userMongooseSchema.pre<IUserDocument>('save', async function (next) {
 });
 
 userMongooseSchema.methods.comparePassword = async function (candidatePassword: string) : Promise<boolean> {
-    return bcrypt.compare(this.password, candidatePassword);
+    return bcrypt.compare(candidatePassword, this.password);
 };
 
 // Transform to remove password in responses

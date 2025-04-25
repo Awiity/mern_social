@@ -15,6 +15,7 @@ export const AuthController = {
             if (!user) throw new ApiError(401, "Invalid credentials");
 
             const isValid = await user.comparePassword(password);
+            console.log(password, user.password)
             if (!isValid) throw new ApiError(401, "Invalid credentials");
 
             const { accessToken, refreshToken } = generateToken(user);

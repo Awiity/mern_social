@@ -15,6 +15,7 @@ export class ApiError extends Error {
         if (error instanceof z.ZodError) {
             return res.status(400).json({
                 message: "Validation error",
+                db: "here",
                 errors: error.errors
             });
         }
