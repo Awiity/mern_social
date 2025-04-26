@@ -1,14 +1,15 @@
-import { Container, Row } from 'react-bootstrap'
-import './App.css'
+import { Container } from 'react-bootstrap'
 import NavbarC from './Components/navbar'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 function App() {
     return (
-        <Container>
-            <Row data-bs-theme="dark">
-                <NavbarC></NavbarC>
-            </Row>
-        </Container>
+        <>
+            <NavbarC></NavbarC>
+            <Container fluid='lg' data-bs-theme='dark'>
+                asd
+            </Container>
+        </>
     )
 }
 
