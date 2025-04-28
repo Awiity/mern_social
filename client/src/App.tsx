@@ -1,15 +1,20 @@
-import { Container } from 'react-bootstrap'
-import NavbarC from './Components/navbar'
-import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { BrowserRouter, Route, Routes } from 'react-router';
+import LoginPage from './Pages/login.page';
+import { Layout } from './Pages/layout.page';
+import { NotFound } from './Pages/notfound.page';
 
 function App() {
     return (
-        <>
-            <NavbarC></NavbarC>
-            <Container fluid='lg' data-bs-theme='dark'>
-                asd
-            </Container>
-        </>
+        <BrowserRouter>
+            <Routes>
+                <Route path='/' element={<Layout />} >
+                    <Route path='login' element={<LoginPage />}></Route>
+                    <Route path='*' element={<NotFound />}></Route>
+                </Route>
+
+            </Routes>
+        </BrowserRouter>
     )
 }
 
