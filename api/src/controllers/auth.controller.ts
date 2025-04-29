@@ -8,16 +8,13 @@ export const AuthController = {
     async login(req: Request, res: Response) {
         try {
             const { email, password } = req.body;
-
             if (!email || !password) throw new ApiError(400, 'Email and password required');
 
             const user = await UserModel.findOne({ email }).select('+password');
             if (!user) throw new ApiError(401, "Invalid credentials");
-
             const isValid = await user.comparePassword(password);
-            console.log(password, user.password)
             if (!isValid) throw new ApiError(401, "Invalid credentials");
-
+            console.log("fuck off")
             const { accessToken, refreshToken } = generateToken(user);
 
             user.refreshToken = refreshToken;

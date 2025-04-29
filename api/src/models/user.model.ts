@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import mongoose, { Document } from "mongoose";
-import bcrypt from 'bcrypt';
+import bcrypt, { genSalt } from 'bcrypt';
 
 const SALT_FACTOR: number = 7;
 
 export const userSchema = z.object({
-    password: z.string().min(8).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
+    password: z.string().min(8).max(60).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
         message: "Password must contain at least one uppercase, one lowercase, and one number"
       }),
     username: z.string().min(3).max(15),
@@ -48,7 +48,11 @@ userMongooseSchema.pre<IUserDocument>('save', async function (next) {
 
     try {
         const salt = await bcrypt.genSalt(SALT_FACTOR);
-        this.password = await bcrypt.hash(this.password, salt);
+        const hashedPassword = await bcrypt.hash(this.password, salt);
+        console.log(hashedPassword, this.password
+            
+        )
+        this.password = hashedPassword;
         return next();
     } catch (error) {
         return next(error as Error);
@@ -56,6 +60,10 @@ userMongooseSchema.pre<IUserDocument>('save', async function (next) {
 });
 
 userMongooseSchema.methods.comparePassword = async function (candidatePassword: string) : Promise<boolean> {
+    const salt = await bcrypt.genSalt(SALT_FACTOR);
+
+    const a = await bcrypt.hash(candidatePassword, salt);
+    console.log(a, this.password);
     return bcrypt.compare(candidatePassword, this.password);
 };
 

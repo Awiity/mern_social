@@ -1,6 +1,13 @@
-import { Button, Container, Nav, Navbar} from "react-bootstrap"
+import { Button, Container, Nav, Navbar, NavbarText} from "react-bootstrap"
 import '../styles/navbar.css'
+import { useAuth } from "../Context/auth.context"
+import { useNavigate } from "react-router";
 const NavbarC = () => {
+    const { user, authFetch, logout } = useAuth();
+    const navigate = useNavigate();
+
+    if (!user) navigate('/login');
+
     return (
         <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary" data-bs-theme='dark'>
             <Container>
@@ -12,8 +19,8 @@ const NavbarC = () => {
                         <Nav.Link href="/friends">Friends</Nav.Link>
                     </Nav>
                     <Nav>
-                        <Nav.Link disabled>Login info</Nav.Link>
-                        <Button variant="secondary" href="/login">Log-In</Button>
+                        {user ? (<p>Hello, {user.username}</p>) : (<NavbarText>Not Logged-In</NavbarText>) }
+                        <Button variant="secondary" href="/login" className="ms-5">Log-In</Button>
                     </Nav>
                 </Navbar.Collapse>
             </Container>

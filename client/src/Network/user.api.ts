@@ -28,6 +28,7 @@ export async function updateUser(id: string, body: object) {
 
 export async function login(credentials: ILoginCred) {
     const response = await axios.post("http://localhost:4000/api/auth/login", credentials);
+    console.log("network.user.login.res: ", response);
     return response;
 }
 

@@ -22,7 +22,7 @@ export const UserController = {
 
     async getAll(req: Request, res: Response) {
         try {
-            const users = await UserModel.find().select("-password");
+            const users = await UserModel.find();
             res.status(200).json(users)
         } catch (error) {
             ApiError.handle(error, res);
