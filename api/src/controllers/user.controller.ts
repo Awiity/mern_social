@@ -1,25 +1,12 @@
 import { Request, Response } from "express";
 import { userSchema, IUserDocument, IUser, UserModel } from "../models/user.model";
-import mongoose from "mongoose";
 import { ApiError } from "../utils/apiError";
-import { generateToken, verifyToken } from "../utils/jwt";
+import bcrypt, { genSalt } from 'bcrypt';
+import { parse } from "path";
+
+const SALT_FACTOR = 12;
 
 export const UserController = {
-
-    async create(req: Request, res: Response) {
-        try {
-            const parsedData = userSchema.parse(req.body);
-            const existingUser = await UserModel.findOne({ email: parsedData.email });
-            if (existingUser) throw new ApiError(409, "Email already exists")
-
-            const newUser = await UserModel.create(parsedData);
-            res.status(201).json(newUser);
-        } catch (error) {
-            ApiError.handle(error, res);
-        }
-
-    },
-
     async getAll(req: Request, res: Response) {
         try {
             const users = await UserModel.find();
@@ -81,8 +68,6 @@ export const UserController = {
 }
 
 /* TODO:
-
-Implement JWT authentication middleware
 
 Include last login tracking
 

@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
-import { UserModel } from "../models/user.model";
+import { UserModel, userSchema } from "../models/user.model";
 import { ApiError } from "../utils/apiError";
-import { generateToken, verifyToken } from "../utils/jwt";
+import { generateTokens, verifyToken } from "../utils/jwt";
 import { strict } from "assert";
+import bcrypt, { genSalt } from "bcrypt";
+import { register } from "module";
+
+const SALT_FACTOR: number = 12;
 
 export const AuthController = {
     async login(req: Request, res: Response) {
@@ -14,38 +18,52 @@ export const AuthController = {
             if (!user) throw new ApiError(401, "Invalid credentials");
             const isValid = await user.comparePassword(password);
             if (!isValid) throw new ApiError(401, "Invalid credentials");
-            console.log("fuck off")
-            const { accessToken, refreshToken } = generateToken(user);
+            const { accessToken, refreshToken } = generateTokens(user);
 
             user.refreshToken = refreshToken;
 
-            await user.save();
-
-            res.cookie('accessToken', accessToken, {
+            res.cookie("accessToken", accessToken, {
                 httpOnly: true,
-                sameSite: 'strict',
-                maxAge: 900000
+                secure: process.env.NODE_ENV === "production",
+                maxAge: 15 * 60 * 1000,                         // 15min
+                sameSite: 'strict'
             });
-
-            res.cookie('refreshToken', refreshToken, {
+            res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
-                sameSite: 'strict',
-                maxAge: 604800000
+                secure: process.env.NODE_ENV === "production",
+                maxAge: 24 * 60 * 60 * 1000,                         // 24 hours
+                sameSite: 'strict'
             });
 
             res.json({
-                accessToken,
-                refreshToken,
                 user: {
                     _id: user._id,
                     username: user.username,
                     email: user.email,
                     role: user.role
                 }
-            });
+            })
         } catch (error) {
             ApiError.handle(error, res);
         };
+    },
+
+    async register(req: Request, res: Response) {
+        try {
+            const parsedData = userSchema.parse(req.body);
+            const existingUser = await UserModel.findOne({ email: parsedData.email });
+            if (existingUser) throw new ApiError(409, "Email already exists")
+            // password hashiong
+            const salt = await genSalt(SALT_FACTOR);
+            const hashedPassword = await bcrypt.hash(parsedData.password, salt);
+            parsedData.password = hashedPassword;
+
+            const newUser = await UserModel.create(parsedData);
+            res.status(201).json(newUser);
+        } catch (error) {
+            ApiError.handle(error, res);
+        }
+
     },
 
     async refreshToken(req: Request, res: Response) {
@@ -58,7 +76,7 @@ export const AuthController = {
 
             if (!user || refreshToken !== user.refreshToken) throw new ApiError(401, "Invalid refresh token");
 
-            const { accessToken, refreshToken: newRefreshToken } = generateToken(user);
+            const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
             user.refreshToken = newRefreshToken;
             await user.save();

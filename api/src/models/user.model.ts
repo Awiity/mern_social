@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import mongoose, { Document } from "mongoose";
-import bcrypt, { genSalt } from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 const SALT_FACTOR: number = 7;
 
@@ -42,15 +42,16 @@ const userMongooseSchema = new mongoose.Schema<IUserDocument>({
 
 });
 
+/* CAUSES BUG: Upon login and subsequent call to user.save() to update refresh-token it triggers it to rerun password hashing resulting in change to password in db
+
 // Hashing password right before saving to DB
 userMongooseSchema.pre<IUserDocument>('save', async function (next) {
     //if (!this.isModified('password')) return next(); // TODO: figure out what isModified method refers to.
-
     try {
         const salt = await bcrypt.genSalt(SALT_FACTOR);
         const hashedPassword = await bcrypt.hash(this.password, salt);
         console.log(hashedPassword, this.password
-            
+
         )
         this.password = hashedPassword;
         return next();
@@ -58,7 +59,7 @@ userMongooseSchema.pre<IUserDocument>('save', async function (next) {
         return next(error as Error);
     }
 });
-
+*/
 userMongooseSchema.methods.comparePassword = async function (candidatePassword: string) : Promise<boolean> {
     const salt = await bcrypt.genSalt(SALT_FACTOR);
 

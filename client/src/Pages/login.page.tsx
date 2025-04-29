@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { Alert, Button, Container, Form, Spinner } from "react-bootstrap";
-import { login, ICred } from "../Network/user.api";
+import { login, ILoginCred } from "../Network/user.api";
 
 
 
 function LoginPage() {
-    const [user, setUser] = useState<ICred>({ email: null, password: null });
+    const [user, setUser] = useState<ILoginCred>({ email: null, password: null });
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>()
     const [response, setResponse] = useState<string | null>(null);
@@ -13,6 +14,7 @@ function LoginPage() {
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setLoading(true);
+        setError(null);
         try {
             const response = await login(user);
          }

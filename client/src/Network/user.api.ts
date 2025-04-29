@@ -18,6 +18,8 @@ export interface IRegisterCred {
 
 export async function signUp(credentials: IRegisterCred) {
     const response = await axios.post("http://localhost:4000/api/users/", credentials)
+    //if (response.statusText !== "OK") return response
+    //localStorage.setItem('auth', response.data);
     return response;
 }
 
@@ -28,12 +30,17 @@ export async function updateUser(id: string, body: object) {
 
 export async function login(credentials: ILoginCred) {
     const response = await axios.post("http://localhost:4000/api/auth/login", credentials);
-    console.log("network.user.login.res: ", response);
+    if (response.statusText !== "OK") return response
+    
+    localStorage.setItem('accessToken', JSON.stringify(response.data.accessToken));
+    localStorage.setItem('refreshToken', JSON.stringify(response.data.refreshToken));
+
     return response;
 }
 
 export async function logout() {
     await axios.post("http://localhost:4000/api/auth/logout");
+    localStorage.removeItem('auth');
 }
 /*import axios from "axios";
 
