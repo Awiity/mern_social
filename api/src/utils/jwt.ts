@@ -11,13 +11,13 @@ export const generateToken = (user: IUserDocument) => {
     const accessToken = jwt.sign(
         { userId: user._id, role: user.role },
         JWT_SECRET,
-        { expiresIn: "1d" }
+        { expiresIn: "15 min" }
     );
 
     const refreshToken = jwt.sign(
         { userId: user._id },
         JWT_SECRET,
-        { expiresIn: "7 days" }
+        { expiresIn: "14 days" }
     );
     return { accessToken, refreshToken };
 };

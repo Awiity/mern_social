@@ -1,84 +1,76 @@
-const fetchData = async (url: string, opt: object) => {
-    try {
-        const response = await fetch(url, opt);
-        if (response.ok) {
-            return response;
-        } else {
-            const badResponse = await response.json();
-            return badResponse;
-        }
-    } catch (error) {
-        console.error(error);
-    }
-};
+import axios from "axios";
 
-export interface ICred {
+export interface ILoginCred {
     email: string | null,
     password: string | null
 };
 
-export async function login(credentials: ICred): Promise<null | object> {
+export interface IRegisterCred {
+    password: string,
+    username: string,
+    firstname: string,
+    lastname: string | undefined,
+    email: string,
+    description: string | undefined,
+    address: string | undefined,
+    role: string | "user",
+}
+
+export async function signUp(credentials: IRegisterCred) {
+    const response = await axios.post("http://localhost:4000/api/users/", credentials)
+    return response;
+}
+
+export async function updateUser(id: string, body: object) {
+    const response = await axios.patch("http://localhost:4000/api/users/", body);
+    return response;
+}
+
+export async function login(credentials: ILoginCred) {
+    const response = await axios.post("http://localhost:4000/api/auth/login", credentials);
+    return response;
+}
+
+export async function logout() {
+    await axios.post("http://localhost:4000/api/auth/logout");
+}
+/*import axios from "axios";
+
+const api_url: string = "http://localhost:4000/api/"
+
+export interface ILoginCred {
+    email: string | null,
+    password: string | null
+};
+
+export interface IRegisterCred {
+    password: string,
+    username: string,
+    firstname: string,
+    lastname: string | undefined,
+    email: string,
+    description: string | undefined,
+    address: string | undefined,
+    role: string | "user",
+}
+
+export async function login(credentials: ILoginCred) {
     const { email, password } = credentials;
     if (!email || !password) {
         throw new Error("Something's missing");
     }
-    const response = await fetchData("http://localhost:4000/api/auth/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(credentials),
+    const response = await axios.post(api_url + "auth/login", {
+        credentials,
     });
     console.log(response);
     return response;
 };
 
-export async function logout() {
-    await fetchData("http://localhost:4000/api/auth/logout", { method: "POST" });
-    sessionStorage.removeItem('user');
-};
-
-export function getToken(): string | null {
-    const token = sessionStorage.getItem('user');
-    if (token) {
-        return token;
+export async function register(credentials: IRegisterCred) {
+    try {
+        const response = await axios.post(api_url + "users/", { credentials });
+        return response;
+    } catch (error) {
+        console.error(error);
     }
-    return null;
-};
-function isTokenExpired(token: string) {
-    const tokenExpiration = JSON.parse(atob(token.split('.')[1]));
-    return Date.now() >= tokenExpiration.exp * 1000;
-};
-
-
-import axios from 'axios';
-
-const api = axios.create({
-    baseURL: 'https://localhost:4000',
-});
-
-api.interceptors.request.use((config) => {
-    const token = getToken();
-    if (token) {
-        if (isTokenExpired(token)) {
-            logout();
-            window.dispatchEvent(new Event('unauthorized'));
-            return Promise.reject(new Error('Token expired'));
-        }
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
-api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            logout();
-            window.dispatchEvent(new Event('unauthorized'));
-        }
-        return Promise.reject(error);
-    }
-);
-
-export default api;
+}*/
