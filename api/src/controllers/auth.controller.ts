@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import { UserModel, userSchema } from "../models/user.model";
 import { ApiError } from "../utils/apiError";
 import { generateTokens, verifyToken } from "../utils/jwt";
-import { strict } from "assert";
 import bcrypt, { genSalt } from "bcrypt";
-import { register } from "module";
+import jwt from "jsonwebtoken";
+import config from "../config/config";
 
 const SALT_FACTOR: number = 12;
 
@@ -19,9 +19,8 @@ export const AuthController = {
             const isValid = await user.comparePassword(password);
             if (!isValid) throw new ApiError(401, "Invalid credentials");
             const { accessToken, refreshToken } = generateTokens(user);
-
             user.refreshToken = refreshToken;
-
+            console.log("tokens are being set", accessToken, refreshToken)
             res.cookie("accessToken", accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
@@ -68,32 +67,58 @@ export const AuthController = {
 
     async refreshToken(req: Request, res: Response) {
         try {
-            const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
-            if (!refreshToken) throw new ApiError(401, "Refresh token required");
+            const userId = (req as any).userId;
+            const refreshToken = req.cookies.refreshToken;
 
-            const decoded = verifyToken(refreshToken);
-            const user = await UserModel.findOne(decoded.userId);
+            const user = await UserModel.findById(userId);
 
-            if (!user || refreshToken !== user.refreshToken) throw new ApiError(401, "Invalid refresh token");
+            if (!user || !refreshToken) {
+                throw new ApiError(401, "Unauthorized")
+            }
 
-            const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+            if (user.refreshToken !== refreshToken) throw new ApiError(401, "Unauthorized")
+            const newAccessToken = jwt.sign(
+                { userId: user.id },
+                config.jwt_secret,
+                { expiresIn: config.access_token_expiry as any },
+            );
+            res.cookie('accessToken', newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 15 * 60 * 1000,
+                sameSite: 'strict'
+            });
 
-            user.refreshToken = newRefreshToken;
-            await user.save();
+            res.status(200).json("token refreshed successfully");
 
-            res.json({ accessToken, refreshToken: newRefreshToken });
         } catch (error) {
             ApiError.handle(error, res);
         };
     },
     async logout(req: Request, res: Response) {
         try {
-            const userId = req.body.user?.userId;
-            await UserModel.findOneAndUpdate(userId, { refreshToken: null });
+            const userId = (req as any).userId;
+            await UserModel.findOneAndUpdate({ _id: userId }, { refreshToken: null });
 
             res.clearCookie('accessToken');
             res.clearCookie('refreshToken');
             res.status(204).send()
+        } catch (error) {
+            ApiError.handle(error, res);
+        }
+    },
+    async authme(req: Request, res: Response) {
+        //console.log("hit");
+        try {
+            const token = await req.cookies.accessToken;
+            //console.log(token);
+            const userId = verifyToken(token).userId;
+            const user = await UserModel.findOne({ _id: userId }).select(
+                "-password -__v -lastname -description -address -createAt -updatedAt -refreshToken" //query
+                    ).exec();
+            //console.log("mememem: ",user);
+            if (!user) throw new ApiError(404, "User was not found");
+            res.status(200).json(user);
         } catch (error) {
             ApiError.handle(error, res);
         }

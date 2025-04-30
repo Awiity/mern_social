@@ -8,3 +8,9 @@ export interface ILoginRes {
         role: string
     }
 }
+export interface IUserContext {
+    _id: string,
+    username: string,
+    email: string,
+    role: string
+}

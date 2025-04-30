@@ -26,6 +26,8 @@ export class ApiError extends Error {
             });
         }
 
+        // TODO ADD JWTTOKEN ERRORS
+
         if (error.code && error.code === 11000) {
             const field = Object.keys(error.keyPattern)[0];
             return res.status(409).json({

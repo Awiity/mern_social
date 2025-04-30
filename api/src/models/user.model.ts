@@ -64,7 +64,7 @@ userMongooseSchema.methods.comparePassword = async function (candidatePassword: 
     const salt = await bcrypt.genSalt(SALT_FACTOR);
 
     const a = await bcrypt.hash(candidatePassword, salt);
-    console.log(a, this.password);
+    //console.log(a, this.password);
     return bcrypt.compare(candidatePassword, this.password);
 };
 

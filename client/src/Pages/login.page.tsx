@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { Alert, Button, Container, Form, Spinner } from "react-bootstrap";
-import { login, ILoginCred } from "../Network/user.api";
+import { ILoginCred } from "../Network/user.api";
+import { useNavigate } from "react-router";
+import { useAuth } from "../Context/auth.context";
 
 
 
 function LoginPage() {
+    const { login } = useAuth();
     const [user, setUser] = useState<ILoginCred>({ email: null, password: null });
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>()
     const [response, setResponse] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -17,9 +21,10 @@ function LoginPage() {
         setError(null);
         try {
             const response = await login(user);
-         }
+        }
         catch (error) { if (error instanceof Error) setError(error); }
         finally { setLoading(false) }
+        navigate("/") 
     };
     return (
         <Container className="border rounded w-25 mt-5" style={{minWidth: 576}}>

@@ -9,12 +9,13 @@ userRoutes.put('/users/:id', UserController.update);
 userRoutes.delete('/users/:id', UserController.delete);
 
 import { AuthController } from "../controllers/auth.controller";
-import { authMiddleware } from "../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 
+userRoutes.get('/auth/me', AuthController.authme);
 userRoutes.post('/auth/login', AuthController.login);
 userRoutes.post('/auth/register', AuthController.register);
-userRoutes.post('/auth/logout', authMiddleware(), AuthController.logout);
 userRoutes.post('/auth/refresh', AuthController.refreshToken);
+userRoutes.post('/auth/logout', authenticate, AuthController.logout);
 
 
 export default userRoutes;
