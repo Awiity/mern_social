@@ -9,7 +9,8 @@ import config from "../config/config";
 declare global {
     namespace Express {
         interface Request {
-            userId: string
+            userId: string,
+            role: string
         }
     }
 }
@@ -28,6 +29,7 @@ export const authenticate = async (
         if (accessToken) {
             const decodedJWT = jwt.verify(accessToken, config.jwt_secret) as jwt.JwtPayload;
             req.userId = decodedJWT.userId;
+            req.role = decodedJWT.role;
             return next();
         }
     } catch (error) {

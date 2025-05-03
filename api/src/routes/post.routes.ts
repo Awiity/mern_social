@@ -6,8 +6,8 @@ const postRoutes = Router();
 
 postRoutes.get('/posts', PostController.getAll);
 postRoutes.get('/posts/:id', authenticate, PostController.getById);
-postRoutes.post('/posts', PostController.create);
-postRoutes.delete('/posts/:id', PostController.delete);
-postRoutes.put('/posts/:id', authenticate, PostController.update)
+postRoutes.post('/posts', authenticate, PostController.create);
+postRoutes.delete('/posts/:id', authenticate, PostController.delete);
+postRoutes.patch('/posts/:id', authenticate, PostController.update)
 
 export default postRoutes;

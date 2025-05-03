@@ -3,7 +3,14 @@ import mongoose from "mongoose";
 import { ApiError } from "../utils/apiError";
 import { generateTokens} from "../utils/jwt";
 import { PostModel, postSchema } from "../models/post.model";
-
+declare global {
+    namespace Express {
+        interface Request {
+            userId: string,
+            role: string
+        }
+    }
+}
 export const PostController = {
 
     async create(req: Request, res: Response) {
@@ -45,11 +52,11 @@ export const PostController = {
             if (!post) throw new ApiError(404, "Post not found.");
 
             // Implement permission check.
-            // if (req.cookies.userId !== parsedData.user_id || req.cookies.role !== 'admin') throw new ApiError(400, "Not enough permissions.");
+            if (req.userId !== parsedData.user_id || req.role !== 'admin') throw new ApiError(403, "Not enough permissions.");
 
             Object.assign(post, parsedData);
             const updatePost = post.save();
-            res.status(200).json(post);
+            res.status(200).json(updatePost);
         } catch (error) {
             ApiError.handle(error, res);
         }

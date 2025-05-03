@@ -1,11 +1,16 @@
 // gonna be latest posted posts
 import { Button, Card, Container } from "react-bootstrap";
 import useFetch from "../Hooks/useFetch";
+import AddPostModal from "../Components/add.post.modal";
+import { useState } from "react";
 
 export function NewsPage() {
     const { data, error, isLoading, reloadCount } = useFetch("http://localhost:4000/api/posts");
+    const [showModal, setShowModal] = useState<boolean>(false);
     return (
         <Container className="w-50 mt-5">
+            <Button onClick={() => setShowModal(true)}>new</Button>
+            <AddPostModal show={showModal} onClose={() => setShowModal(false)} />
             {data instanceof Array ? data.map((item) => (
                 <Card className="mt-3" key={item._id}>
                     <Card.Header>
