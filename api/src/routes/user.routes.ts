@@ -11,7 +11,7 @@ userRoutes.delete('/users/:id', UserController.delete);
 import { AuthController } from "../controllers/auth.controller";
 import { authenticate, refreshTokenValidation } from "../middleware/auth.middleware";
 
-userRoutes.get('/auth/me', AuthController.authme);
+userRoutes.get('/auth/me', authenticate, AuthController.authme);
 userRoutes.post('/auth/login', AuthController.login);
 userRoutes.post('/auth/register', AuthController.register);
 userRoutes.post('/auth/refresh', refreshTokenValidation, AuthController.refreshToken);

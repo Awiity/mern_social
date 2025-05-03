@@ -9,7 +9,7 @@ const REFRESH_TOKEN_EXPIRY: string = config.refresh_token_expiry;
 
 export const generateTokens = (user: IUserDocument) => {
     const accessToken = jwt.sign(
-        { userId: user._id, role: user.role },
+        { userId: user._id },
         JWT_SECRET,
         { expiresIn: "15 min" }
     );
@@ -17,7 +17,7 @@ export const generateTokens = (user: IUserDocument) => {
     const refreshToken = jwt.sign(
         { userId: user._id },
         JWT_SECRET,
-        { expiresIn: "14 days" }
+        { expiresIn: "1 day" }
     );
     return { accessToken, refreshToken };
 };

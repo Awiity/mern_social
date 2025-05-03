@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 //console.log( response);
                 setUser(response.data);
             } catch (error) {
+                console.log("authme/ error");
                 console.error(error);
             } finally {
                 setLoading(false);

@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
 import { UserModel, userSchema } from "../models/user.model";
 import { ApiError } from "../utils/apiError";
-import { generateTokens }  from "../utils/jwt";
+import { generateTokens } from "../utils/jwt";
 import bcrypt, { genSalt } from "bcrypt";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
 
+interface RequestM extends Request {
+    userId: string
+}
 const SALT_FACTOR: number = 12;
 
 export const AuthController = {
@@ -30,10 +33,12 @@ export const AuthController = {
             res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                maxAge: 24 * 60 * 60 * 1000,                         // 24 hours
+                maxAge: 1 * 24 * 60 * 60 * 1000,                         // 24 hours / 1 day
                 sameSite: 'strict'
             });
 
+            await user.save();
+            req.userId = user.id;
             res.json({
                 user: {
                     _id: user._id,
@@ -67,9 +72,9 @@ export const AuthController = {
 
     async refreshToken(req: Request, res: Response) {
         try {
-            const userId = (req as any).userId;
-            const refreshToken = req.cookies.refreshToken;
+            const userId = req.userId;
 
+            const refreshToken = req.cookies.refreshToken;
             const user = await UserModel.findById(userId);
 
             if (!user || !refreshToken) {
@@ -77,27 +82,43 @@ export const AuthController = {
             }
 
             if (user.refreshToken !== refreshToken) throw new ApiError(401, "Unauthorized")
+
             const newAccessToken = jwt.sign(
                 { userId: user.id },
                 config.jwt_secret,
                 { expiresIn: config.access_token_expiry as any },
             );
+            const newRefreshToken = jwt.sign(
+                { userId: user._id },
+                config.jwt_secret,
+                { expiresIn: "1 day" }
+            );
+            user.refreshToken = newRefreshToken;
+            await user.save();
+
             res.cookie('accessToken', newAccessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 15 * 60 * 1000,
                 sameSite: 'strict'
             });
-
+            res.cookie('refreshToken', config.jwt_secret, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000,
+                sameSite: 'strict'
+            })
             res.status(200).json("token refreshed successfully");
             console.log("refreshed token");
+
         } catch (error) {
+
             ApiError.handle(error, res);
         };
     },
     async logout(req: Request, res: Response) {
         try {
-            const userId = (req as any).userId;
+            const userId = req.userId;
             await UserModel.findOneAndUpdate({ _id: userId }, { refreshToken: null });
 
             res.clearCookie('accessToken');
@@ -108,19 +129,23 @@ export const AuthController = {
         }
     },
     async authme(req: Request, res: Response) {
-        //console.log("hit");
         try {
-            const token = await req.cookies.accessToken;
-            if (!token) AuthController.refreshToken(req, res)
-            const userId = (jwt.verify(token, config.jwt_secret) as jwt.JwtPayload).userId;
-            const user = await UserModel.findOne({ _id: userId }).select(
-                "-password -__v -lastname -description -address -createAt -updatedAt -refreshToken" //query
-                    ).exec();
-            //console.log("mememem: ",user);
-            if (!user) throw new ApiError(404, "User was not found");
+            // 1. Get user from middleware (already verified by authenticate middleware)
+            console.log(req.userId)
+            const user = await UserModel.findById(req.userId).select(
+                "_id username email role" // Explicit safe field selection
+            ).exec();
+
+            if (!user) {
+                // 2. Clear cookies if user not found (ghost account scenario)
+                //res.clearCookie('accessToken');
+                //res.clearCookie('refreshToken');
+                throw new ApiError(404, "User not found");
+            }
+
+            // 3. Return sanitized user data
             res.status(200).json(user);
         } catch (error) {
-            if (error instanceof jwt.TokenExpiredError) AuthController.refreshToken(req, res);
             ApiError.handle(error, res);
         }
     }
