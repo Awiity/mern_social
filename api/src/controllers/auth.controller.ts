@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { UserModel, userSchema } from "../models/user.model";
 import { ApiError } from "../utils/apiError";
-import { generateTokens, verifyToken } from "../utils/jwt";
+import { generateTokens }  from "../utils/jwt";
 import bcrypt, { genSalt } from "bcrypt";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
@@ -90,7 +90,7 @@ export const AuthController = {
             });
 
             res.status(200).json("token refreshed successfully");
-
+            console.log("refreshed token");
         } catch (error) {
             ApiError.handle(error, res);
         };
@@ -111,8 +111,8 @@ export const AuthController = {
         //console.log("hit");
         try {
             const token = await req.cookies.accessToken;
-            //console.log(token);
-            const userId = verifyToken(token).userId;
+            if (!token) AuthController.refreshToken(req, res)
+            const userId = (jwt.verify(token, config.jwt_secret) as jwt.JwtPayload).userId;
             const user = await UserModel.findOne({ _id: userId }).select(
                 "-password -__v -lastname -description -address -createAt -updatedAt -refreshToken" //query
                     ).exec();
@@ -120,6 +120,7 @@ export const AuthController = {
             if (!user) throw new ApiError(404, "User was not found");
             res.status(200).json(user);
         } catch (error) {
+            if (error instanceof jwt.TokenExpiredError) AuthController.refreshToken(req, res);
             ApiError.handle(error, res);
         }
     }

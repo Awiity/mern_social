@@ -6,7 +6,7 @@ export const postSchema = z.object({
     title: z.string().min(3),
     body: z.string().optional(),
     user_id: z.string(),
-    file_attached: z.string(),
+    file_attached: z.string().optional(),
     createdAt: z.date().default(new Date()),
     updatedAt: z.date().default(new Date())  
 });

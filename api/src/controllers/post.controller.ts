@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { ApiError } from "../utils/apiError";
-import { generateTokens, verifyToken } from "../utils/jwt";
-import { PostModel, postSchema } from "../models/post.mode";
+import { generateTokens} from "../utils/jwt";
+import { PostModel, postSchema } from "../models/post.model";
 
 export const PostController = {
 

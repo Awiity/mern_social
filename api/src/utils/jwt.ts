@@ -21,10 +21,3 @@ export const generateTokens = (user: IUserDocument) => {
     );
     return { accessToken, refreshToken };
 };
-export const verifyToken = (token: string) => {
-    try {
-        return jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
-    } catch (error) {
-        throw new ApiError(401, 'Invalid token');
-    }
-};

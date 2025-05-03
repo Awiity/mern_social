@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 import LoginPage from './Pages/login.page';
 import { Layout } from './Pages/layout.page';
 import { NotFound } from './Pages/notfound.page';
+import { ProtectedRoute } from './Components/protected.route';
+import { NewsPage } from './Pages/news.page';
 
 function App() {
     return (
@@ -10,7 +12,8 @@ function App() {
             <Routes>
                 <Route path='/' element={<Layout />} >
                     <Route path='login' element={<LoginPage />}></Route>
-                    <Route path='*' element={<NotFound />}></Route>
+                    <Route path='*' element={<ProtectedRoute><NotFound /></ProtectedRoute>}></Route>
+                    <Route path='news' element={<ProtectedRoute><NewsPage></NewsPage></ProtectedRoute>}></Route>
                 </Route>
 
             </Routes>

@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { z } from "zod"
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 //deepseek did this
 export class ApiError extends Error {
