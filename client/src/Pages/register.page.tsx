@@ -1,0 +1,118 @@
+import { useState } from "react";
+import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
+import { IRegisterCred, register } from "../Network/user.api";
+import { useNavigate } from "react-router";
+import { Axios, AxiosResponse } from "axios";
+
+export function RegisterPage() {
+    const [user, setUser] = useState<IRegisterCred>({
+        username: null,
+        password: null,
+        email: null,
+        firstname: null,
+        role: 'user',
+        lastname: null,
+        address: null,
+        description: null
+    });
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<Error | null>(null)
+    const [resMsg, setResMsg] = useState<AxiosResponse>();
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await register(user);
+            setResMsg(response);
+        }
+        catch (error) { if (error instanceof Error) setError(error); }
+        finally { setLoading(false) }
+        //navigate("/login")
+    };
+    return (
+        <Container className="mt-3 fluid w-25" style={{ minWidth: 576 }}>
+            <Form onSubmit={handleSubmit}>
+                {/* USERNAME */}
+                <Form.Group controlId="username" className="mb-3">
+                    <Form.Label>Username</Form.Label>
+                    <Form.Control
+                        id="username"
+                        placeholder="Your pseudoname..."
+                        value={user.username || ""}
+                        onChange={(e) => setUser({ ...user, username: e.target.value })}></Form.Control>
+                    <Form.Text className="text-muted">Required</Form.Text>
+                </Form.Group>
+
+                {/* EMAIL */}
+                <Form.Group controlId="email" className="mb-3">
+                    <Form.Label>E-mail</Form.Label><Form.Text className="text-muted ms-10">Required</Form.Text>
+                    <Form.Control
+                        id="email"
+                        type="email"
+                        placeholder="email@example.org"
+                        value={user.email || ""}
+                        onChange={(e) => setUser({ ...user, email: e.target.value })}></Form.Control>
+                </Form.Group>
+
+                {/* PASSWORD */}
+                <Form.Group controlId="password" className="mb-3">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control
+                        id="password"
+                        type="password"
+                        placeholder="Secure password..."
+                        value={user.password || ""}
+                        onChange={(e) => setUser({ ...user, password: e.target.value })}></Form.Control>
+                    <Form.Text className="">Minumum 8 symbols with at least 1 uppercase, 1 lowercase and 1 special character.</Form.Text>
+                </Form.Group>
+
+                <Row>
+
+                    <Col>
+                        {/* FIRSTNAME */}
+
+                        <Form.Group controlId="firstname" className="mb-3">
+                            <Form.Label>Firstname</Form.Label>
+                            <Form.Control
+                                id="firstname"
+                                value={user.firstname || ""}
+                                onChange={(e) => setUser({ ...user, firstname: e.target.value })}></Form.Control>
+                            <Form.Text className="text-muted">Required</Form.Text>
+                        </Form.Group>
+                    </Col>
+
+                    <Col>
+                        {/* LASTNAME */}
+
+                        <Form.Group controlId="lastname" className="mb-3">
+                            <Form.Label>Lastname</Form.Label>
+                            <Form.Control
+                                id="lastname"
+                                value={user.lastname || ""}
+                                onChange={(e) => setUser({ ...user, lastname: e.target.value })}></Form.Control>
+                            <Form.Text className="text-muted">Optional</Form.Text>
+                        </Form.Group>
+                    </Col>
+
+                </Row>
+                {/* ADDRESS */}
+
+                <Form.Group controlId="address" className="mb-3">
+                    <Form.Label>Address</Form.Label>
+                    <Form.Control
+                        id="address"
+                        value={user.address || ""}
+                        onChange={(e) => setUser({ ...user, address: e.target.value })}></Form.Control>
+
+                    <Form.Text className="text-muted">Optional</Form.Text>
+                </Form.Group>
+
+                <Button className="me-auto" variant="primary" type="submit">Register</Button>
+                {error && <Alert variant="danger">{error?.message}</Alert>}
+                {resMsg && <Alert variant="success">{resMsg.statusText}</Alert>}
+            </Form>
+        </Container>
+    );
+}

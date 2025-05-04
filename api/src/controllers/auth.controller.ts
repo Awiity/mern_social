@@ -23,7 +23,8 @@ export const AuthController = {
             if (!isValid) throw new ApiError(401, "Invalid credentials");
             const { accessToken, refreshToken } = generateTokens(user);
             user.refreshToken = refreshToken;
-            console.log("tokens are being set", accessToken, refreshToken)
+            console.log("tokens are being set", accessToken.slice(accessToken.length - 5, accessToken.length - 1),
+                refreshToken.slice(refreshToken.length - 5, refreshToken.length - 1));
             res.cookie("accessToken", accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
@@ -81,18 +82,9 @@ export const AuthController = {
                 throw new ApiError(401, "Unauthorized")
             }
 
-            if (user.refreshToken !== refreshToken) throw new ApiError(401, "Unauthorized")
+            if (user.refreshToken !== refreshToken) throw new ApiError(401, "Unauthorized (invalidRefreshToken)")
 
-            const newAccessToken = jwt.sign(
-                { userId: user.id },
-                config.jwt_secret,
-                { expiresIn: config.access_token_expiry as any },
-            );
-            const newRefreshToken = jwt.sign(
-                { userId: user._id },
-                config.jwt_secret,
-                { expiresIn: "1 day" }
-            );
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens(user);
             user.refreshToken = newRefreshToken;
             await user.save();
 
@@ -102,7 +94,7 @@ export const AuthController = {
                 maxAge: 15 * 60 * 1000,
                 sameSite: 'strict'
             });
-            res.cookie('refreshToken', config.jwt_secret, {
+            res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 24 * 60 * 60 * 1000,
@@ -130,16 +122,14 @@ export const AuthController = {
     },
     async authme(req: Request, res: Response) {
         try {
-            // 1. Get user from middleware (already verified by authenticate middleware)
-            console.log(req.userId)
+            //console.log(req.userId)
             const user = await UserModel.findById(req.userId).select(
                 "_id username email role" // Explicit safe field selection
             ).exec();
 
             if (!user) {
-                // 2. Clear cookies if user not found (ghost account scenario)
-                //res.clearCookie('accessToken');
-                //res.clearCookie('refreshToken');
+                res.clearCookie('accessToken');
+                res.clearCookie('refreshToken');
                 throw new ApiError(404, "User not found");
             }
 

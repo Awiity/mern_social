@@ -22,7 +22,6 @@ export const authenticate = async (
 ) => {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
-
     if (!accessToken && !refreshToken) throw new ApiError(401, "Unauthorized (No tokens provided)");
 
     try {
@@ -42,26 +41,15 @@ export const authenticate = async (
         throw new ApiError(401, "Session expired - No refresh token");
     }
     try {
-        const decodedRefresh = jwt.verify(refreshToken, config.jwt_secret) as jwt.JwtPayload;
-        const user = await UserModel.findById(decodedRefresh.userId).select('+refreshToken');
+        const decodedRefresh = jwt.verify(refreshToken, config.jwt_refresh_secret) as jwt.JwtPayload;
+        const user = await UserModel.findById(decodedRefresh.userId).select('+refreshToken +_id +role').exec();
+        console.log(user?.refreshToken?.slice(user.refreshToken.length - 5, user.refreshToken.length - 1),
+                    " ", refreshToken.slice(refreshToken.length - 5, refreshToken.length - 1));
         if (!user || user.refreshToken !== refreshToken) {
             res.clearCookie('refreshToken');
-            throw new ApiError(401, "Invalid refresh token");
+            throw new ApiError(401, "Invalid refresh token XDDDDD");
         }
-        const newAccessToken = jwt.sign(
-            { userId: user._id },
-            config.jwt_secret,
-            { expiresIn: "15 min" }
-        );
-
-        const newRefreshToken = jwt.sign(
-            { userId: user._id },
-            config.jwt_secret,
-            { expiresIn: "1 day" }
-        );
-
-        user.refreshToken = newRefreshToken;
-        await user.save();
+        const { accessToken: newAccessToken } = generateTokens(user);
 
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
@@ -69,19 +57,13 @@ export const authenticate = async (
             maxAge: 15 * 60 * 1000,
             sameSite: 'strict'
         });
-        res.cookie("refreshToken", newRefreshToken, {
-            httpOnly: true,
-            //secure: process.env.NODE_ENV === 'production',
-            maxAge: 24 * 60 * 60 * 1000,
-            sameSite: 'strict'
-        });
-        console.log('here sets req.userId');
-        req.userId = user.id;
+        
+        req.userId = user._id;
         next();
     } catch (error) {
-        res.clearCookie("accessToken");
-        res.clearCookie("refreshToken");
-        throw new ApiError(401, "Unauthorized (something went wrong");
+        //res.clearCookie("accessToken");
+        //res.clearCookie("refreshToken");
+        throw new ApiError(401, "Unauthorized (something went wrong)");
     }
 }
 export const refreshTokenValidation = (
@@ -90,9 +72,10 @@ export const refreshTokenValidation = (
     next: NextFunction
 ) => {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) throw new ApiError(401, "Invalid token (auth.controller.RTV)")
+    if (!refreshToken) throw new ApiError(401, "Invalid token (no token provided auth.mid.rtv)")
     try {
-        const decodedJWT = (jwt.verify(refreshToken, config.jwt_secret) as jwt.JwtPayload).userId;
+        const decodedJWT = jwt.verify(refreshToken, config.jwt_refresh_secret) as jwt.JwtPayload;
+        console.log("rvt stuff")
         req.userId = decodedJWT.userId;
         next();
     } catch (error) {

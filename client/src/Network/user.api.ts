@@ -6,17 +6,17 @@ export interface ILoginCred {
 };
 
 export interface IRegisterCred {
-    password: string,
-    username: string,
-    firstname: string,
-    lastname: string | undefined,
-    email: string,
-    description: string | undefined,
-    address: string | undefined,
+    password: string | null,
+    username: string | null,
+    firstname: string | null,
+    lastname: string | null,
+    email: string | null,
+    description: string | null,
+    address: string | null,
     role: string | "user",
 }
 axios.defaults.withCredentials = true;
-export async function signUp(credentials: IRegisterCred) {
+export async function register(credentials: IRegisterCred) {
     const response = await axios.post("http://localhost:4000/api/users/", credentials)
     //if (response.statusText !== "OK") return response
     //localStorage.setItem('auth', response.data);

@@ -3,6 +3,7 @@ import { userSchema, IUserDocument, IUser, UserModel } from "../models/user.mode
 import { ApiError } from "../utils/apiError";
 import bcrypt, { genSalt } from 'bcrypt';
 import { parse } from "path";
+import { register } from "module";
 
 const SALT_FACTOR = 12;
 
@@ -13,6 +14,18 @@ export const UserController = {
             res.status(200).json(users)
         } catch (error) {
             ApiError.handle(error, res);
+        }
+    },
+
+    async register(req: Request, res: Response) {
+        try {
+            const newUser = req.body;
+            const existingUser = await UserModel.find({email: newUser.email}).select('+email').exec();
+            
+            if (existingUser) throw new ApiError(403, "User with that E-mail already exists, please login");
+            
+        } catch (error) {
+            console.log(error)
         }
     },
 
