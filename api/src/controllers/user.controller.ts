@@ -19,13 +19,16 @@ export const UserController = {
 
     async register(req: Request, res: Response) {
         try {
-            const newUser = req.body;
-            const existingUser = await UserModel.find({email: newUser.email}).select('+email').exec();
+            const newUserData: IUser = req.body;
+            const existingUser = await UserModel.find({email: newUserData.email}).select('+email').exec();
             
             if (existingUser) throw new ApiError(403, "User with that E-mail already exists, please login");
+
+            const user = await UserModel.create(newUserData);
             
         } catch (error) {
-            console.log(error)
+            console.log(error);
+            ApiError.handle(error, res);
         }
     },
 

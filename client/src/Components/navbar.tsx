@@ -33,7 +33,10 @@ const NavbarC = () => {
                                 <NavbarText>{user.username}</NavbarText>
                                 <Button variant="danger" className="ms-3" onClick={handleLogout}>Log-Out</Button>
                             </>) : (
-                            <Button variant="secondary" href="/login" className="ms-5">Log-In</Button>
+                            <>
+                                <Button variant="primary" href="/login" className="ms-5">Log-In</Button>
+                                <Button variant="secondary" href="/register" className="ms-3">Register</Button></>
+
                         )}
                     </Nav>
                 </Navbar.Collapse>

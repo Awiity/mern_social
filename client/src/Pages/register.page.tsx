@@ -1,20 +1,21 @@
 import { useState } from "react";
-import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
+import { Form, Button, Container, Row, Col, Alert, Spinner } from "react-bootstrap";
 import { IRegisterCred, register } from "../Network/user.api";
 import { useNavigate } from "react-router";
 import { Axios, AxiosResponse } from "axios";
 
 export function RegisterPage() {
     const [user, setUser] = useState<IRegisterCred>({
-        username: null,
-        password: null,
-        email: null,
-        firstname: null,
+        username: '',
+        password: '',
+        email: '',
+        firstname: '',
         role: 'user',
-        lastname: null,
-        address: null,
-        description: null
+        lastname: '',
+        address: '',
+        description: ''
     });
+    /* TODO: move all this crap to useRegister hook */
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null)
@@ -31,11 +32,13 @@ export function RegisterPage() {
         finally { setLoading(false) }
         //navigate("/login")
     };
+    console.log("HERERERERER ERROR: ", error);
+
     return (
         <Container className="mt-3 fluid w-25" style={{ minWidth: 576 }}>
             <Form onSubmit={handleSubmit}>
                 {/* USERNAME */}
-                <Form.Group controlId="username" className="mb-3">
+                <Form.Group  className="mb-3">
                     <Form.Label>Username</Form.Label>
                     <Form.Control
                         id="username"
@@ -46,18 +49,19 @@ export function RegisterPage() {
                 </Form.Group>
 
                 {/* EMAIL */}
-                <Form.Group controlId="email" className="mb-3">
-                    <Form.Label>E-mail</Form.Label><Form.Text className="text-muted ms-10">Required</Form.Text>
+                <Form.Group  className="mb-3">
+                    <Form.Label>E-mail</Form.Label>
                     <Form.Control
                         id="email"
                         type="email"
                         placeholder="email@example.org"
                         value={user.email || ""}
                         onChange={(e) => setUser({ ...user, email: e.target.value })}></Form.Control>
+                        <Form.Text className="text-muted ms-10">Required</Form.Text>
                 </Form.Group>
 
                 {/* PASSWORD */}
-                <Form.Group controlId="password" className="mb-3">
+                <Form.Group  className="mb-3">
                     <Form.Label>Password</Form.Label>
                     <Form.Control
                         id="password"
@@ -73,7 +77,7 @@ export function RegisterPage() {
                     <Col>
                         {/* FIRSTNAME */}
 
-                        <Form.Group controlId="firstname" className="mb-3">
+                        <Form.Group className="mb-3">
                             <Form.Label>Firstname</Form.Label>
                             <Form.Control
                                 id="firstname"
@@ -86,7 +90,7 @@ export function RegisterPage() {
                     <Col>
                         {/* LASTNAME */}
 
-                        <Form.Group controlId="lastname" className="mb-3">
+                        <Form.Group className="mb-3">
                             <Form.Label>Lastname</Form.Label>
                             <Form.Control
                                 id="lastname"
@@ -99,7 +103,7 @@ export function RegisterPage() {
                 </Row>
                 {/* ADDRESS */}
 
-                <Form.Group controlId="address" className="mb-3">
+                <Form.Group className="mb-3">
                     <Form.Label>Address</Form.Label>
                     <Form.Control
                         id="address"
@@ -109,9 +113,9 @@ export function RegisterPage() {
                     <Form.Text className="text-muted">Optional</Form.Text>
                 </Form.Group>
 
-                <Button className="me-auto" variant="primary" type="submit">Register</Button>
-                {error && <Alert variant="danger">{error?.message}</Alert>}
-                {resMsg && <Alert variant="success">{resMsg.statusText}</Alert>}
+                <Button className="me-auto" variant="primary" type="submit" disabled={loading}><Spinner size="sm" hidden={!loading} /> Register</Button>
+                {error && <Alert variant="danger" className="mt-3">{error.message}</Alert>}
+                {resMsg && <Alert variant="success" className="mt-3">{resMsg.statusText}</Alert>}
             </Form>
         </Container>
     );

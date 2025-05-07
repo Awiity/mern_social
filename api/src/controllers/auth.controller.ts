@@ -54,8 +54,10 @@ export const AuthController = {
     },
 
     async register(req: Request, res: Response) {
+        console.log("register called")
         try {
             const parsedData = userSchema.parse(req.body);
+
             const existingUser = await UserModel.findOne({ email: parsedData.email });
             if (existingUser) throw new ApiError(409, "Email already exists")
             // password hashiong
