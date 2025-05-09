@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { ILoginCred } from "../Network/user.api";
 axios.defaults.withCredentials = true;
 type User = {
-    userId: string;
+    _id: string;
     username: string,
     email: string;
 };

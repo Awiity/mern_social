@@ -1,12 +1,11 @@
 import axios from "axios";
 
-const api_url: string = "localhost:4000/api/";
+const api_url: string = "http://localhost:4000/api/";
 
 export interface IPostData {
     title: string,
     body: string | null,
-    authorId: string,
-    fileAttached: string | null
+    user_id: string
 }
 
 export async function postNew(newPost: IPostData) {

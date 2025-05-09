@@ -34,7 +34,7 @@ function LoginPage() {
                     <Form.Control
                         type="email"
                         placeholder="Your email..."
-                        onChange={e => { setUser({ ...user, email: e.target.value }) }}
+                        onChange={e =>  setUser({ ...user, email: e.target.value }) }
                         value={user.email || ""} />
                 </Form.Group>
 
