@@ -9,8 +9,8 @@
 <hr>
 <p>
   JsonWebTokens in cookies for authentification flow.
-  React Native and React-bootstrap for Front-End styling and logic.
-  Mongoose for MongoDB connection and models.
+  <br>React Native and React-bootstrap for Front-End styling and logic.
+  <br>Mongoose for MongoDB connection and models.
 </p>
 <hr>
 <h3>TODO:</h3>
