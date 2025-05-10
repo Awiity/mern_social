@@ -6,3 +6,14 @@
   <br>React Native, React-bootstrap
   <br>Node.js
 </p>
+<hr>
+<p>
+  JsonWebTokens in cookies for authentification flow.
+  React Native and React-bootstrap for Front-End styling and logic.
+  Mongoose for MongoDB connection and models.
+</p>
+<hr>
+<h3>TODO:</h3>
+<p>
+  Websockets for live-chat functionality.
+</p>
