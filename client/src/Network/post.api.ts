@@ -3,9 +3,11 @@ import axios from "axios";
 const api_url: string = "http://localhost:4000/api/";
 
 export interface IPostData {
+    _id: string | null,
     title: string,
     body: string | null,
-    user_id: string
+    user_id: string,
+    createdAt: Date
 }
 
 export async function postNew(newPost: IPostData) {

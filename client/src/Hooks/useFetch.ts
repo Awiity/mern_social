@@ -43,7 +43,7 @@ function useFetch<DataType = unknown>(url: string) {
         return () => abortController.abort();
     }, [url, reloadCount]);
 
-    return { data, isLoading, error, reload };
+    return { data, setData, isLoading, error, reload };
 };
 
 export default useFetch;

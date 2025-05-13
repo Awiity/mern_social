@@ -26,7 +26,7 @@ export const PostController = {
 
     async getAll(req: Request, res: Response) {
         try {
-            const posts = await PostModel.find()
+            const posts = await PostModel.find().sort({createdAt: -1}); // [0...n] 0 - latest post
             res.status(200).json(posts);
         } catch (error) {
             ApiError.handle(error, res);

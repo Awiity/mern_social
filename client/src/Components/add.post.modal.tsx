@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from 'react';
+import React, { Dispatch, useState } from 'react';
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../Context/auth.context';
 import { postNew, IPostData } from '../Network/post.api';
+import { sleep } from '../Static/static.methods';
 
 
 interface ModalComponentProps {
@@ -11,10 +12,12 @@ interface ModalComponentProps {
     body?: React.ReactNode;
     footer?: React.ReactNode;
     onClose?: () => void;
+    posts?: unknown;
+    setPosts: Dispatch<unknown>;
 }
 
 
-const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose }) => {
+const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, setPosts }) => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>();
@@ -23,6 +26,7 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose }) => {
         title: "",
         body: "",
         user_id: user ? user._id : "",
+        createdAt: new Date()
     });
 
 
@@ -34,10 +38,15 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose }) => {
         try {
             const response = await postNew(post);
             if (response?.statusText == "OK") { console.log("post created"); setResMsg("Post has been successfully created"); }
-
+            if (posts instanceof Array) setPosts([...posts, post]);
+            setLoading(false);
+            await sleep(3000);
+            if (onClose) onClose();
         } catch (error) {
             if (error instanceof Error)
                 setError(error);
+        } finally {
+            setLoading(false);
         }
     }
     return (
