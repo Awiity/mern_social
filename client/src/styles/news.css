@@ -1,0 +1,5 @@
+.main-container {
+    border-left: solid 1px rgba(255,255,255, 0.1);
+    border-right: solid 1px rgba(255,255,255, 0.1);
+    min-height: 100vh;
+}

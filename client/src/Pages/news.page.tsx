@@ -1,11 +1,12 @@
 // gonna be latest posted posts
-import { Button, Card, Container } from "react-bootstrap";
+import { Button, Card, Container, Spinner } from "react-bootstrap";
 import useFetch from "../Hooks/useFetch";
 import AddPostModal from "../Components/add.post.modal";
 import { useState } from "react";
 import { timeSince } from "../Static/date.methods";
 import { useAuth } from "../Context/auth.context";
 import { deletePost, IPostData } from "../Network/post.api";
+import '../styles/news.css'
 /*
 interface IPostData {
     title: string,
@@ -30,8 +31,10 @@ export function NewsPage() {
     }
 
     return (
-        <Container className="w-50 mt-5" style={{ minWidth: 576 }}>
-            <Button onClick={() => setShowModal(true)}>new</Button>
+        <Container className="w-50 main-container" style={{ minWidth: 576 }}>
+            <div className="w-100 d-flex justify-content-center">
+                <Button className="mt-5" size="lg" variant="success" onClick={() => setShowModal(true)}>Create new Post</Button>
+            </div>
             <AddPostModal show={showModal} onClose={() => setShowModal(false)} posts={data} setPosts={setData} />
             {data instanceof Array ? data.map((item) => (
                 <Card className="mt-3" key={item._id} >
@@ -47,7 +50,7 @@ export function NewsPage() {
 
                     </Card.Footer>
                 </Card>
-            )) : (<p>Hui sosi</p>)}
+            )) : (<Spinner />)}
         </Container>
     );
 

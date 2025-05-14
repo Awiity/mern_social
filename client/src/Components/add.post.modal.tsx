@@ -2,9 +2,9 @@
 import React, { Dispatch, useState } from 'react';
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../Context/auth.context';
-import { postNew, IPostData } from '../Network/post.api';
+import { postNew } from '../Network/post.api';
 import { sleep } from '../Static/static.methods';
-
+import '../styles/addpost.css'
 
 interface ModalComponentProps {
     show: boolean;
@@ -15,7 +15,10 @@ interface ModalComponentProps {
     posts?: unknown;
     setPosts: Dispatch<unknown>;
 }
-
+interface IPostData {
+    title: string,
+    body: string | null,
+    user_id: string}
 
 const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, setPosts }) => {
     const { user } = useAuth();
@@ -25,8 +28,7 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
     const [post, setPost] = useState<IPostData>({
         title: "",
         body: "",
-        user_id: user ? user._id : "",
-        createdAt: new Date()
+        user_id: user ? user._id : ""
     });
 
 
@@ -38,15 +40,17 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
         try {
             const response = await postNew(post);
             if (response?.statusText == "OK") { console.log("post created"); setResMsg("Post has been successfully created"); }
-            if (posts instanceof Array) setPosts([...posts, post]);
+            if (posts instanceof Array) setPosts([post, ...posts]);
             setLoading(false);
             await sleep(3000);
             if (onClose) onClose();
+            setPost({title:"",body:"", user_id: ""})
         } catch (error) {
             if (error instanceof Error)
                 setError(error);
         } finally {
             setLoading(false);
+            setResMsg("");
         }
     }
     return (
@@ -68,13 +72,17 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
                             as='textarea'
                             rows={10}
                             value={post?.body || ""}
-                            onChange={ e => setPost({...post, body: e.target.value})}
-                            ></Form.Control>
+                            onChange={e => setPost({ ...post, body: e.target.value })}
+                        ></Form.Control>
                     </Form.Group>
 
                 </Form>
                 {error && <Alert variant='danger'>{error.message}</Alert>}
-                {resMsg && <Alert variant='success'>{resMsg}</Alert>}
+                {resMsg && <><Alert variant='success'>
+                    <div className="progress mb-3">
+                        <div className="progress-value"></div>
+                    </div>
+                    <p className='mb-3'>{resMsg}</p></Alert></>}
             </Modal.Body>
             <Modal.Footer>
                 <Button variant='success' type='submit' form='post-form'><Spinner size='sm' hidden={!loading} ></Spinner>Submit</Button>
