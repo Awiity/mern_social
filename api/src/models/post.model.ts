@@ -1,27 +1,29 @@
-import { z } from 'zod';
+import { string, z } from 'zod';
 import mongoose, { Document } from "mongoose";
-import bcrypt from 'bcrypt';
 
+// fixed date snapshotting. cause: calling Date.now() or new Date made it so createdAt and updatedAt
+// were stuck with snapshotted value - fix: pass Date.now function as default for these properties
 export const postSchema = z.object({
     title: z.string().min(3),
     body: z.string().optional(),
     user_id: z.string(),
-    file_attached: z.string().optional(),
-    createdAt: z.date().default(new Date()),
-    updatedAt: z.date().default(new Date())  
+    file: z.string().optional()
 });
 
 export type IPost = z.infer<typeof postSchema>;
 
 export interface IPostDocument extends IPost {
-    _id: string
+    _id: string,
+    createdAt: Date,
+    updatedAt: Date,
+    file: string
 };
 
 const postMongooseSchema = new mongoose.Schema<IPostDocument>({
     title: { type: String, required: true },
     body: { type: String, required: false },
     user_id: { type: String, required: true },
-    file_attached: { type: String, required: false },
+    file: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

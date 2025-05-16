@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
 import { ApiError } from "../utils/apiError";
-import { generateTokens} from "../utils/jwt";
 import { PostModel, postSchema } from "../models/post.model";
+import { handleUpload } from "../utils/cloudinary";
+import { MulterRequest } from "../middleware/multer.shabim";
+
 declare global {
     namespace Express {
         interface Request {
@@ -11,12 +12,45 @@ declare global {
         }
     }
 }
+/*
+    export interface UploadApiResponse {
+        public_id: string;
+        version: number;
+        signature: string;
+        width: number;
+        height: number;
+        format: string;
+        resource_type: "image" | "video" | "raw" | "auto";
+        created_at: string;
+        tags: Array<string>;
+        pages: number;
+        bytes: number;
+        type: string;
+        etag: string;
+        placeholder: boolean;
+        url: string;
+        secure_url: string;
+        access_mode: string;
+        original_filename: string;
+        moderation: Array<string>;
+        access_control: Array<string>;
+        context: object; //won't change since it's response, we need to discuss documentation team about it before implementing.
+        metadata: object; //won't change since it's response, we need to discuss documentation team about it before implementing.
+        colors?: [string, number][];
+
+        [futureKey: string]: any;
+    } */
 export const PostController = {
 
     async create(req: Request, res: Response) {
         try {
+            console.log("body", req.body);
+            console.log("file", req.file);
+            const b64 = Buffer.from(req.file!.buffer).toString('base64');
+            let dataURI = 'data:' + req.file!.mimetype + ';base64,' + b64;
+            const cldRes = await handleUpload(dataURI);
             const parsedData = postSchema.parse(req.body);
-
+            parsedData.file = cldRes.secure_url;
             const newPost = await PostModel.create(parsedData);
             res.status(200).json(newPost);
         } catch (error) {
@@ -26,7 +60,7 @@ export const PostController = {
 
     async getAll(req: Request, res: Response) {
         try {
-            const posts = await PostModel.find().sort({createdAt: -1}); // [0...n] 0 - latest post
+            const posts = await PostModel.find().sort({ createdAt: -1 }); // [0...n] 0 - latest post
             res.status(200).json(posts);
         } catch (error) {
             ApiError.handle(error, res);

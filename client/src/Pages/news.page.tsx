@@ -5,16 +5,18 @@ import AddPostModal from "../Components/add.post.modal";
 import { useState } from "react";
 import { timeSince } from "../Static/date.methods";
 import { useAuth } from "../Context/auth.context";
-import { deletePost, IPostData } from "../Network/post.api";
-import '../styles/news.css'
-/*
+import { deletePost } from "../Network/post.api";
+import '../styles/news.css';
+import add_svg from '../Static/SVGs/add.svg';
+
 interface IPostData {
     title: string,
     body: string | null,
     user_id: string,
-    createdAt: Date
+    createdAt: Date,
+    _id?: string
 }
-    */
+
 export function NewsPage() {
     const { user: currentUser } = useAuth();
     const { data, setData, error, isLoading, reloadCount } = useFetch("http://localhost:4000/api/posts");
@@ -31,9 +33,10 @@ export function NewsPage() {
     }
 
     return (
-        <Container className="w-50 main-container" style={{ minWidth: 576 }}>
+        <Container className="w-50 main-container" style={{ minWidth: 875 }}>
             <div className="w-100 d-flex justify-content-center">
-                <Button className="mt-5" size="lg" variant="success" onClick={() => setShowModal(true)}>Create new Post</Button>
+                <Button className="mt-5" size="lg" variant="success" onClick={() => setShowModal(true)}>
+                    <img src={add_svg} width="35px" /> Create new Post</Button>
             </div>
             <AddPostModal show={showModal} onClose={() => setShowModal(false)} posts={data} setPosts={setData} />
             {data instanceof Array ? data.map((item) => (
@@ -43,9 +46,13 @@ export function NewsPage() {
                     </Card.Header>
                     <Card.Body>{item.body}</Card.Body>
                     <Card.Footer className="d-flex justify-content-between align-items-center">
-                        {(currentUser && (currentUser == item.user_id || currentUser.role == 'admin'))
-                            ? <Button variant="danger" onClick={() => handleItemRemove(item._id)}>Delete</Button>
-                            : <Button variant="secondary">idk</Button>}
+                        {(currentUser && (currentUser.role === 'admin'))
+                            ?
+                            <>
+                                <Button variant="danger" onClick={() => handleItemRemove(item._id)}>Delete</Button>
+                                
+                            </>
+                            : <Card.Text className="text-muted"></Card.Text>}
                         <Card.Text className="text-muted"><small>{timeSince(new Date(item.createdAt))} ago</small></Card.Text>
 
                     </Card.Footer>
