@@ -1,0 +1,117 @@
+[
+  {
+    "username": "john123",
+    "password": "Passw0rd!",
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "john.doe@example.com",
+    "description": "A valid user.",
+    "address": "123 Main St",
+    "role": "user"
+  },
+  {
+    "username": "am",
+    "password": "Password1!",
+    "firstname": "Amy",
+    "email": "amy.smith@example.com",
+    "role": "user"
+  },
+  {
+    "username": "elizabeth_queen_of_everything",
+    "password": "StrongPass1@",
+    "firstname": "Elizabeth",
+    "email": "elizabeth@example.com",
+    "role": "admin"
+  },
+  {
+    "username": "brianK",
+    "password": "short1!",
+    "firstname": "Brian",
+    "email": "brian.k@example.com",
+    "role": "user"
+  },
+  {
+    "username": "carlos88",
+    "password": "Carlos@123",
+    "firstname": "CarlosCarlosCarlo", 
+    "email": "carlos@example.com",
+    "role": "user"
+  },
+  {
+    "username": "dianaM",
+    "password": "Diana123!",
+    "firstname": "Diana",
+    "email": "diana.m@example.com",
+    "description": "",
+    "address": "",
+    "role": "user"
+  },
+  {
+    "username": "eve99",
+    "password": "NoSpecial123",  
+    "firstname": "Eve",
+    "email": "eve@example.com",
+    "role": "admin"
+  },
+  {
+    "username": "frankie",
+    "password": "Frankie#2022",
+    "firstname": "Frank",
+    "lastname": "Miller",
+    "email": "frank@example.com",
+    "role": "moderator"
+  },
+  {
+    "username": "grace_h",
+    "password": "Gr@ceful88",
+    "firstname": "Grace",
+    "email": "grace.h@example.com",
+    "role": "user"
+  },
+  {
+    "username": "henry",
+    "password": "Henry#321",
+    "firstname": "Henry",
+    "email": "grace.h@example.com",  
+    "role": "user"
+  },
+  {
+    "username": "ianW",
+    "password": "i@N2022",
+    "firstname": "Ian",
+    "email": "ian.w@example.com",
+    "role": "user"
+  },
+  {
+    "username": "julia007",
+    "password": "Julia2022$",
+    "firstname": "Julia",
+    "lastname": "Roberts",
+    "email": "julia.rob@example",
+    "description": "Email format invalid",
+    "role": "admin"
+  },
+  {
+    "username": "kate123",
+    "password": "Kate@1234",
+    "firstname": "Kate",
+    "lastname": null,
+    "email": "kate@example.com",
+    "address": "456 Pine Rd",
+    "role": "user"
+  },
+  {
+    "username": "leo",
+    "password": "Leo!321xyzabcxyzabcxyzabc",
+    "firstname": "Leo",
+    "email": "leo@example.com",
+    "role": "admin"
+  },
+  {
+    "username": "maria",
+    "password": "Maria@123",
+    "firstname": "",
+    "email": "maria@example.com",
+    "role": "user"
+  }
+]

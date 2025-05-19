@@ -24,6 +24,6 @@ const upload = multer({
   limits: {
     fileSize: 1024 * 1024 * 5 // 5MB limit (adjust as needed)
   }
-}); // 'file' should match the field name in the form-data
+}).single('post_file'); // 'file' should match the field name in the form-data
 
 export default upload;

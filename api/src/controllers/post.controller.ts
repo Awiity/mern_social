@@ -44,13 +44,14 @@ export const PostController = {
 
     async create(req: Request, res: Response) {
         try {
-            console.log("body", req.body);
-            console.log("file", req.file);
-            const b64 = Buffer.from(req.file!.buffer).toString('base64');
-            let dataURI = 'data:' + req.file!.mimetype + ';base64,' + b64;
-            const cldRes = await handleUpload(dataURI);
             const parsedData = postSchema.parse(req.body);
-            parsedData.file = cldRes.secure_url;
+            if (req.file) {
+                const b64 = Buffer.from(req.file!.buffer).toString('base64');
+                let dataURI = 'data:' + req.file!.mimetype + ';base64,' + b64;
+                const cldRes = await handleUpload(dataURI);
+                parsedData.file = cldRes.secure_url;
+            }
+
             const newPost = await PostModel.create(parsedData);
             res.status(200).json(newPost);
         } catch (error) {

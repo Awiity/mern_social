@@ -1,5 +1,5 @@
 // gonna be latest posted posts
-import { Button, Card, Container, Spinner } from "react-bootstrap";
+import { Button, Card, Container, Image, Spinner } from "react-bootstrap";
 import useFetch from "../Hooks/useFetch";
 import AddPostModal from "../Components/add.post.modal";
 import { useState } from "react";
@@ -13,6 +13,7 @@ interface IPostData {
     title: string,
     body: string | null,
     user_id: string,
+    file: string,
     createdAt: Date,
     _id?: string
 }
@@ -45,6 +46,7 @@ export function NewsPage() {
                         <Card.Title>{item.title}</Card.Title>
                     </Card.Header>
                     <Card.Body>{item.body}</Card.Body>
+                    <Image src={item.file} className="d-flex justify-center"></Image>
                     <Card.Footer className="d-flex justify-content-between align-items-center">
                         {(currentUser && (currentUser.role === 'admin'))
                             ?

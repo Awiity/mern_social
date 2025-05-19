@@ -55,6 +55,7 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
             formData.append('title', post.title);
             formData.append('body', post.body);
             formData.append('user_id', user._id);
+            if (post.file) formData.append('post_file', post.file);
             const response = await postNew(formData);
             console.log(response);
             if (response?.statusText === "OK") {
@@ -114,7 +115,7 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
                             <div className='mt-3'>
                                 <p>{post.file.name}</p>
                                 <p>{post.file.type}</p>
-                                <p>{post.file.size} Bytes</p>
+                                <p>{Math.floor(post.file.size / 1024)} KB</p>
                             </div>
                         }
                     </Form.Group>
