@@ -1,4 +1,4 @@
-import { string, z } from 'zod';
+import { z } from 'zod';
 import mongoose, { Document } from "mongoose";
 
 // fixed date snapshotting. cause: calling Date.now() or new Date made it so createdAt and updatedAt
@@ -6,23 +6,29 @@ import mongoose, { Document } from "mongoose";
 export const postSchema = z.object({
     title: z.string().min(3),
     body: z.string().optional(),
-    user_id: z.string(),
     file: z.string().optional()
 });
 
 export type IPost = z.infer<typeof postSchema>;
 
-export interface IPostDocument extends IPost {
-    _id: string,
-    createdAt: Date,
-    updatedAt: Date,
-    file: string
-};
+export interface IPostWithUserId extends IPost {
+    user_id: mongoose.Types.ObjectId;
+}
+
+export interface IPostDocument extends IPostWithUserId, Document {
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 
 const postMongooseSchema = new mongoose.Schema<IPostDocument>({
     title: { type: String, required: true },
     body: { type: String, required: false },
-    user_id: { type: String, required: true },
+    user_id: { 
+        type: mongoose.Schema.Types.ObjectId,
+        required: true, 
+        ref: "User" 
+    },
     file: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }

@@ -10,7 +10,7 @@ cloudinary.config({
 export async function handleUpload(file: string) {
   const res = await cloudinary.uploader.upload(file, {
     transformation: [
-        { height: 100, crop: 'fill' },
+        { height: 1000, crop: 'fill' },
         { quality: 'auto', fetch_format: 'auto' }
     ]
   });

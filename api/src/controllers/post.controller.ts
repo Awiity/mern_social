@@ -3,6 +3,7 @@ import { ApiError } from "../utils/apiError";
 import { PostModel, postSchema } from "../models/post.model";
 import { handleUpload } from "../utils/cloudinary";
 import { MulterRequest } from "../middleware/multer.shabim";
+import { Types } from "mongoose";
 
 declare global {
     namespace Express {
@@ -61,7 +62,7 @@ export const PostController = {
 
     async getAll(req: Request, res: Response) {
         try {
-            const posts = await PostModel.find().sort({ createdAt: -1 }); // [0...n] 0 - latest post
+            const posts = await PostModel.find().populate('user_id', 'username _id').sort({ createdAt: -1 }); // [0...n] 0 - latest post
             res.status(200).json(posts);
         } catch (error) {
             ApiError.handle(error, res);
@@ -70,8 +71,16 @@ export const PostController = {
 
     async delete(req: Request, res: Response) {
         try {
-            const tbdPost = await PostModel.findByIdAndDelete(req.params.id);
-            if (!tbdPost) throw new ApiError(404, "Post not found.");
+            if (!Types.ObjectId.isValid(req.params._id)) throw new ApiError(404, "Invalid Post ID.");
+
+            const postToDel = await PostModel.findById(req.params._id);
+            if (!postToDel) throw new ApiError(404, "Post doesn't exist.");
+
+            if (req.userId !== String(postToDel.user_id) || req.role !== 'admin')
+                throw new ApiError(403, "Not enough permissions.");
+
+            await PostModel.deleteOne({ _id: postToDel._id });
+
             res.status(200).send();
         } catch (error) {
             ApiError.handle(error, res);
@@ -81,17 +90,21 @@ export const PostController = {
     async update(req: Request, res: Response) {
         try {
             const parsedData = postSchema.parse(req.body);
-            const updatedPost = postSchema.partial();
+            const updatedPost = new PostModel({
+                ...parsedData,
+                user_id: req.userId,
+                role: req.role
+            });
 
             const post = await PostModel.findById(req.params.id);
             if (!post) throw new ApiError(404, "Post not found.");
 
             // Implement permission check.
-            if (req.userId !== parsedData.user_id || req.role !== 'admin') throw new ApiError(403, "Not enough permissions.");
+            if (req.userId !== String(updatedPost.user_id) || req.role !== 'admin') throw new ApiError(403, "Not enough permissions.");
 
-            Object.assign(post, parsedData);
-            const updatePost = post.save();
-            res.status(200).json(updatePost);
+            Object.assign(post, updatedPost);
+            const saveResult = post.save();
+            res.status(200).json(saveResult);
         } catch (error) {
             ApiError.handle(error, res);
         }
@@ -99,9 +112,9 @@ export const PostController = {
 
     async getById(req: Request, res: Response) {
         try {
-            const post = await PostModel.findById(req.params.id);
+            const post = await PostModel.findById(req.params.id).populate('user_id', 'username').exec();
             if (!post) throw new ApiError(404, "Post not found");
-
+            console.log(post)
             res.status(200).json(post);
         } catch (error) {
             ApiError.handle(error, res);
