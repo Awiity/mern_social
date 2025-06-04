@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Form, Button, Container, Row, Col, Alert, Spinner } from "react-bootstrap";
 import { IRegisterCred, register } from "../Network/user.api";
-import { useNavigate } from "react-router";
-import { Axios, AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 
 export function RegisterPage() {
     const [user, setUser] = useState<IRegisterCred>({
@@ -16,7 +15,6 @@ export function RegisterPage() {
         description: ''
     });
     /* TODO: move all this crap to useRegister hook */
-    const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null)
     const [resMsg, setResMsg] = useState<AxiosResponse>();
@@ -38,7 +36,7 @@ export function RegisterPage() {
         <Container className="mt-3 fluid w-25" style={{ minWidth: 576 }}>
             <Form onSubmit={handleSubmit}>
                 {/* USERNAME */}
-                <Form.Group  className="mb-3">
+                <Form.Group className="mb-3">
                     <Form.Label>Username</Form.Label>
                     <Form.Control
                         id="username"
@@ -49,7 +47,7 @@ export function RegisterPage() {
                 </Form.Group>
 
                 {/* EMAIL */}
-                <Form.Group  className="mb-3">
+                <Form.Group className="mb-3">
                     <Form.Label>E-mail</Form.Label>
                     <Form.Control
                         id="email"
@@ -57,11 +55,11 @@ export function RegisterPage() {
                         placeholder="email@example.org"
                         value={user.email || ""}
                         onChange={(e) => setUser({ ...user, email: e.target.value })}></Form.Control>
-                        <Form.Text className="text-muted ms-10">Required</Form.Text>
+                    <Form.Text className="text-muted ms-10">Required</Form.Text>
                 </Form.Group>
 
                 {/* PASSWORD */}
-                <Form.Group  className="mb-3">
+                <Form.Group className="mb-3">
                     <Form.Label>Password</Form.Label>
                     <Form.Control
                         id="password"
@@ -110,6 +108,15 @@ export function RegisterPage() {
                         value={user.address || ""}
                         onChange={(e) => setUser({ ...user, address: e.target.value })}></Form.Control>
 
+                    <Form.Text className="text-muted">Optional</Form.Text>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Choose your avatar (2 MB max)</Form.Label>
+                    <Form.Control
+                        type="file"
+                    >
+                        
+                    </Form.Control>
                     <Form.Text className="text-muted">Optional</Form.Text>
                 </Form.Group>
 

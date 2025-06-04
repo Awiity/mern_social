@@ -14,6 +14,7 @@ export const userSchema = z.object({
     email: z.string().min(5).max(20),
     description: z.string().optional(),
     address: z.string().optional(),
+    avatar: z.string().optional(),
     role: z.enum(['user', 'admin']).default('user'),
     createdAt: z.date().default(new Date()),
     updatedAt: z.date().default(new Date())
@@ -35,6 +36,7 @@ const userMongooseSchema = new mongoose.Schema<IUserDocument>({
     email: { type: String, required: true, unique: true },
     description: { type: String, required: false },
     address: { type: String, required: false },
+    avatar: { type: String, required: false },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

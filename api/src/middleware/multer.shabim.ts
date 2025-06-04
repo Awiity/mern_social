@@ -9,12 +9,9 @@ export interface MulterRequest extends Request {
 // Configure memory storage
 const storage = multer.memoryStorage();
 
-// Create Multer middleware instance
 const upload = multer({
   storage: storage,
-  // Optional: Add file filter or limits if needed
   fileFilter: (req, file, cb) => {
-    // Example filter: accept only images
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -22,8 +19,8 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 1024 * 1024 * 5 // 5MB limit (adjust as needed)
+    fileSize: 1024 * 1024 * 2 // 2MB limit (adjust as needed)
   }
-}).single('post_file'); // 'file' should match the field name in the form-data
+});
 
 export default upload;

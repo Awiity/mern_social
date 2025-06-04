@@ -16,3 +16,12 @@ export async function handleUpload(file: string) {
   });
   return res;
 }
+export async function handleUploadUserAvatar(file: string) {
+  const res = await cloudinary.uploader.upload(file, {
+    transformation: [
+        { height: 300, crop: 'fill' },
+        { quality: 'auto', fetch_format: 'auto' }
+    ]
+  });
+  return res;
+}
