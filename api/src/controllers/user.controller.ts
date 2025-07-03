@@ -72,6 +72,7 @@ export const UserController = {
 
     async getById(req: Request, res: Response) {
         try {
+            console.log("Getting user by ID: ", req.params.id);
             const user = await UserModel.findById(req.params.id).select('-password');
 
             if (!user) throw new ApiError(404, "User not found");

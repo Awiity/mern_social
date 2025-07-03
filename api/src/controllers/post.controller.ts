@@ -4,6 +4,7 @@ import { PostModel, postSchema } from "../models/post.model";
 import { handleUpload } from "../utils/cloudinary";
 import { MulterRequest } from "../middleware/multer.shabim";
 import { Types } from "mongoose";
+import { get } from "http";
 
 declare global {
     namespace Express {
@@ -116,6 +117,18 @@ export const PostController = {
             if (!post) throw new ApiError(404, "Post not found");
             console.log(post)
             res.status(200).json(post);
+        } catch (error) {
+            ApiError.handle(error, res);
+        }
+    },
+    async getByUserId(req: Request, res: Response) {
+        try {
+            const userId = req.params.user_id;
+            console.log("User ID: ", userId);
+            if (!Types.ObjectId.isValid(userId)) throw new ApiError(404, "Invalid User ID.");
+            const posts = await PostModel.find({ user_id: userId }).populate('user_id', 'username').sort({ createdAt: -1 });
+            if (posts.length === 0) throw new ApiError(404, "No posts found for this user.");
+            res.status(200).json(posts);
         } catch (error) {
             ApiError.handle(error, res);
         }
