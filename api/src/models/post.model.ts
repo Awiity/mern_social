@@ -6,13 +6,19 @@ import mongoose, { Document } from "mongoose";
 export const postSchema = z.object({
     title: z.string().min(3),
     body: z.string().optional(),
+    user_id: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+        message: "Invalid user ID format"
+    }),
     file: z.string().optional()
 });
 
 export type IPost = z.infer<typeof postSchema>;
 
-export interface IPostWithUserId extends IPost {
+export interface IPostWithUserId {
+    title: string;
+    body?: string;
     user_id: mongoose.Types.ObjectId;
+    file?: string;
 }
 
 export interface IPostDocument extends IPostWithUserId, Document {
