@@ -22,8 +22,7 @@ export const authenticate = async (
 ) => {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
-    console.log("Access token: ", accessToken);
-    console.log("Refresh token: ", refreshToken);
+    console.log(req.cookies)
     if (!accessToken && !refreshToken) throw new ApiError(401, "Unauthorized (No tokens provided)");
 
     try {

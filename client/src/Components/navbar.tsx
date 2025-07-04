@@ -19,7 +19,7 @@ const NavbarC = () => {
         }
     }
     return (
-        <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary" data-bs-theme='dark'>
+        <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary rounded-bottom navbar-container" data-bs-theme='dark'>
             <Container>
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="44px" height="44px"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M5 7L12 3L19 7L21 12L19 17L12 21L5 17L3 12L5 7Z" stroke="#90ee91" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 7L7 12L12 17L17 12L12 7Z" stroke="#90ee91" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 3V7" stroke="#fefefe" stroke-linecap="round" stroke-linejoin="round"></path><path d="M3 12H7" stroke="#fefefe" stroke-linecap="round" stroke-linejoin="round"></path><path d="M17 12H21" stroke="#fefefe" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 21V17" stroke="#fefefe" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
                 <Navbar.Brand href="/">
