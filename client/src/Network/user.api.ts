@@ -28,6 +28,7 @@ export async function updateUser(id: string, body: object) {
     return response;
 }
 
+
 /*import axios from "axios";
 
 const api_url: string = "http://localhost:4000/api/"
@@ -48,17 +49,7 @@ export interface IRegisterCred {
     role: string | "user",
 }
 
-export async function login(credentials: ILoginCred) {
-    const { email, password } = credentials;
-    if (!email || !password) {
-        throw new Error("Something's missing");
-    }
-    const response = await axios.post(api_url + "auth/login", {
-        credentials,
-    });
-    console.log(response);
-    return response;
-};
+
 
 export async function register(credentials: IRegisterCred) {
     try {

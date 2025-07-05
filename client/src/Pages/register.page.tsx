@@ -1,129 +1,249 @@
-import { useState } from "react";
-import { Form, Button, Container, Row, Col, Alert, Spinner } from "react-bootstrap";
-import { IRegisterCred, register } from "../Network/user.api";
-import { AxiosResponse } from "axios";
+import React, { useState } from 'react';
+import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
+import '../styles/register.css'; 
+import { register } from '../Network/user.api';
+import { useNavigate } from 'react-router';
 
-export function RegisterPage() {
-    const [user, setUser] = useState<IRegisterCred>({
+interface RegisterFormData {
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    firstname: string;
+    lastname: string;
+    description: string;
+    address: string;
+    avatar: string;
+    role: 'user'; // Default role
+}
+
+export const RegisterPage: React.FC = () => {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState<RegisterFormData>({
         username: '',
-        password: '',
         email: '',
+        password: '',
+        confirmPassword: '',
         firstname: '',
-        role: 'user',
         lastname: '',
+        description: '',
         address: '',
-        description: ''
+        avatar: '',
+        role: 'user' // Default role
     });
-    /* TODO: move all this crap to useRegister hook */
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<Error | null>(null)
-    const [resMsg, setResMsg] = useState<AxiosResponse>();
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await register(user);
-            setResMsg(response);
+    const [showAlert, setShowAlert] = useState<boolean>(false);
+    const [passwordMatch, setPasswordMatch] = useState<boolean>(true);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        // Check password match
+        if (name === 'password' || name === 'confirmPassword') {
+            if (name === 'password') {
+                setPasswordMatch(value === formData.confirmPassword || formData.confirmPassword === '');
+            } else {
+                setPasswordMatch(value === formData.password);
+            }
         }
-        catch (error) { if (error instanceof Error) setError(error); }
-        finally { setLoading(false) }
-        //navigate("/login")
     };
-    console.log("HERERERERER ERROR: ", error);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!passwordMatch) {
+            return;
+        }
+        try {
+            const response = await register(formData);
+            if (response.status === 200) {
+                setShowAlert(true);
+            }
+        } catch (error) {
+            console.error('Error during registration:', error);
+        }
+        setShowAlert(true);
+        setTimeout(() => {setShowAlert(false); navigate('/login')}, 3000);
+    };
 
     return (
-        <Container className="mt-3 fluid w-25" style={{ minWidth: 576 }}>
-            <Form onSubmit={handleSubmit}>
-                {/* USERNAME */}
-                <Form.Group className="mb-3">
-                    <Form.Label>Username</Form.Label>
-                    <Form.Control
-                        id="username"
-                        placeholder="Your pseudoname..."
-                        value={user.username || ""}
-                        onChange={(e) => setUser({ ...user, username: e.target.value })}></Form.Control>
-                    <Form.Text className="text-muted">Required</Form.Text>
-                </Form.Group>
+        <div className="register-container">
+            <Container fluid className="min-vh-100 d-flex align-items-center justify-content-center py-5">
+                <Row className="w-100">
+                    <Col xs={12} sm={10} md={8} lg={6} xl={5} className="mx-auto">
+                        <Card className="register-card shadow-lg border-0">
+                            <Card.Body className="p-5">
+                                <div className="text-center mb-5">
+                                    <h2 className="register-title mb-2">Create Account</h2>
+                                    <p className="register-subtitle text-muted">Join us today and get started</p>
+                                </div>
 
-                {/* EMAIL */}
-                <Form.Group className="mb-3">
-                    <Form.Label>E-mail</Form.Label>
-                    <Form.Control
-                        id="email"
-                        type="email"
-                        placeholder="email@example.org"
-                        value={user.email || ""}
-                        onChange={(e) => setUser({ ...user, email: e.target.value })}></Form.Control>
-                    <Form.Text className="text-muted ms-10">Required</Form.Text>
-                </Form.Group>
+                                {showAlert && (
+                                    <Alert variant="success" className="custom-alert mb-4">
+                                        Registration attempt registered! (Implement your logic here)
+                                    </Alert>
+                                )}
 
-                {/* PASSWORD */}
-                <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                        id="password"
-                        type="password"
-                        placeholder="Secure password..."
-                        value={user.password || ""}
-                        onChange={(e) => setUser({ ...user, password: e.target.value })}></Form.Control>
-                    <Form.Text className="">Minumum 8 symbols with at least 1 uppercase, 1 lowercase and 1 special character.</Form.Text>
-                </Form.Group>
+                                <Form onSubmit={handleSubmit}>
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="form-label">Username *</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    name="username"
+                                                    value={formData.username}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Choose a username"
+                                                    className="custom-input"
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="form-label">Email Address *</Form.Label>
+                                                <Form.Control
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Enter your email"
+                                                    className="custom-input"
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
 
-                <Row>
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="form-label">First Name *</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    name="firstname"
+                                                    value={formData.firstname}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Enter your first name"
+                                                    className="custom-input"
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="form-label">Last Name</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    name="lastname"
+                                                    value={formData.lastname}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Enter your last name"
+                                                    className="custom-input"
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
 
-                    <Col>
-                        {/* FIRSTNAME */}
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="form-label">Password *</Form.Label>
+                                                <Form.Control
+                                                    type="password"
+                                                    name="password"
+                                                    value={formData.password}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Create a password"
+                                                    className="custom-input"
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="form-label">Confirm Password *</Form.Label>
+                                                <Form.Control
+                                                    type="password"
+                                                    name="confirmPassword"
+                                                    value={formData.confirmPassword}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Confirm your password"
+                                                    className={`custom-input ${!passwordMatch ? 'is-invalid' : ''}`}
+                                                    required
+                                                />
+                                                {!passwordMatch && (
+                                                    <div className="invalid-feedback">
+                                                        Passwords do not match
+                                                    </div>
+                                                )}
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Firstname</Form.Label>
-                            <Form.Control
-                                id="firstname"
-                                value={user.firstname || ""}
-                                onChange={(e) => setUser({ ...user, firstname: e.target.value })}></Form.Control>
-                            <Form.Text className="text-muted">Required</Form.Text>
-                        </Form.Group>
+                                    <Form.Group className="mb-4">
+                                        <Form.Label className="form-label">Description</Form.Label>
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={3}
+                                            name="description"
+                                            value={formData.description}
+                                            onChange={handleInputChange}
+                                            placeholder="Tell us about yourself (optional)"
+                                            className="custom-input"
+                                        />
+                                    </Form.Group>
+
+                                    <Form.Group className="mb-4">
+                                        <Form.Label className="form-label">Address</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter your address (optional)"
+                                            className="custom-input"
+                                        />
+                                    </Form.Group>
+
+                                    <Form.Group className="mb-4">
+                                        <Form.Label className="form-label">Avatar URL</Form.Label>
+                                        <Form.Control
+                                            type="url"
+                                            name="avatar"
+                                            value={formData.avatar}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter avatar image URL (optional)"
+                                            className="custom-input"
+                                        />
+                                    </Form.Group>
+
+                                    <Button
+                                        type="submit"
+                                        className="register-button w-100 mb-3"
+                                        size="lg"
+                                        disabled={!passwordMatch}
+                                    >
+                                        Create Account
+                                    </Button>
+                                </Form>
+
+                                <div className="text-center">
+                                    <span className="text-muted">Already have an account? </span>
+                                    <a href="#" className="login-link">
+                                        Sign in here
+                                    </a>
+                                </div>
+                            </Card.Body>
+                        </Card>
                     </Col>
-
-                    <Col>
-                        {/* LASTNAME */}
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Lastname</Form.Label>
-                            <Form.Control
-                                id="lastname"
-                                value={user.lastname || ""}
-                                onChange={(e) => setUser({ ...user, lastname: e.target.value })}></Form.Control>
-                            <Form.Text className="text-muted">Optional</Form.Text>
-                        </Form.Group>
-                    </Col>
-
                 </Row>
-                {/* ADDRESS */}
+            </Container>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Address</Form.Label>
-                    <Form.Control
-                        id="address"
-                        value={user.address || ""}
-                        onChange={(e) => setUser({ ...user, address: e.target.value })}></Form.Control>
-
-                    <Form.Text className="text-muted">Optional</Form.Text>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Label>Choose your avatar (2 MB max)</Form.Label>
-                    <Form.Control
-                        type="file"
-                    >
-                        
-                    </Form.Control>
-                    <Form.Text className="text-muted">Optional</Form.Text>
-                </Form.Group>
-
-                <Button className="me-auto" variant="primary" type="submit" disabled={loading}><Spinner size="sm" hidden={!loading} /> Register</Button>
-                {error && <Alert variant="danger" className="mt-3">{error.message}</Alert>}
-                {resMsg && <Alert variant="success" className="mt-3">{resMsg.statusText}</Alert>}
-            </Form>
-        </Container>
+        </div>
     );
-}
+};
