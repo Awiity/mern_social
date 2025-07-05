@@ -4,7 +4,7 @@ import userRoutes from './routes/user.routes';
 import { connectDB } from './config/db';
 import cookieParser from 'cookie-parser';
 import postRoutes from './routes/post.routes';
-import { RoomManager } from './controllers/room.controller';
+import { RoomManager } from './controllers/room.manager';
 import {
     ServerToClientEvents,
     ClientToServerEvents,
