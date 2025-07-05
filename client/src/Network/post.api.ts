@@ -5,8 +5,10 @@ const api_url: string = "http://localhost:4000/api/";
 export interface IPostData {
     title?: string | undefined,
     body?: string | null | undefined,
-    user_id?: string | undefined,
-    file?: File | null
+    user_id?: { username: string, _id: string },
+    file?: string | null,
+    createdAt?: Date,
+    _id?: string
 }
 
 export async function postNew(formData: FormData): Promise<any> {
