@@ -3,7 +3,7 @@ import { Alert, Button, Container, Spinner } from "react-bootstrap";
 import useFetch from "../Hooks/useFetch";
 import AddPostModal from "../Components/add.post.modal";
 import { useState } from "react";
-import { deletePost } from "../Network/post.api";
+//import { deletePost } from "../Network/post.api";
 import '../styles/news.css';
 import add_svg from '../Static/SVGs/add.svg';
 import { Post } from "../Components/post";
@@ -20,7 +20,7 @@ interface IPostData {
 export function NewsPage() {
     const { data, setData, error, isLoading } = useFetch("http://localhost:4000/api/posts");
     const [showModal, setShowModal] = useState<boolean>(false);
-
+    /*
     async function handleItemRemove(_id: string) {
         try {
             const response = await deletePost(_id);
@@ -29,7 +29,7 @@ export function NewsPage() {
         } catch (error) {
             console.error(error);
         }
-    }
+    }*/
 
     return (
         <Container className="w-50 main-container" style={{ minWidth: 875 }}>
