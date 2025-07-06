@@ -36,6 +36,6 @@ export class ApiError extends Error {
             });
         }
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error!!!!!" });
     }
 }

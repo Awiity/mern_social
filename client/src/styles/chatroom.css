@@ -71,7 +71,7 @@
 }
 
 .users-header {
-    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    background: linear-gradient(135deg, #dc3545 0%, #fd3714 100%);
     color: white;
     padding: 15px;
     border-radius: 10px 10px 0 0;
@@ -143,6 +143,12 @@
     border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
+
+.rooms-header {
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(135deg, #dc3545 0%, #fd3714 100%);
+}
+
 
 ::-webkit-scrollbar {
     width: 8px;

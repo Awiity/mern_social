@@ -4,6 +4,7 @@ import userRoutes from './routes/user.routes';
 import { connectDB } from './config/db';
 import cookieParser from 'cookie-parser';
 import postRoutes from './routes/post.routes';
+import roomRoutes from './routes/room.routes';
 import { RoomManager } from './controllers/room.manager';
 import {
     ServerToClientEvents,
@@ -39,16 +40,6 @@ const io = new Server<
 });
 
 const roomManager = new RoomManager();
-
-app.get('/api/rooms', (req, res) => {
-    const rooms = roomManager.getAllRooms().map(room => ({
-        name: room.name,
-        userCount: room.users.size,
-        createdAt: room.createdAt
-    }));
-    res.json(rooms);
-});
-
 // Socket.io connection
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
@@ -224,11 +215,12 @@ connectDB();
 
 // Routes
 app.use('/api', userRoutes);
-app.use('/api', postRoutes)
+app.use('/api', postRoutes);
+app.use('/api', roomRoutes);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
-    res.status(500).json({ message: "Internal Sever Error" });
+    res.status(500).json({ message: "Internal Server Error!!!" });
 });
 
 
