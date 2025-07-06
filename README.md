@@ -1,19 +1,43 @@
-<h1>Small social-media like web-application.</h1>
-<h3>Tech stack</h3>
-<p>
-  <br>MongoDB (mongoose).
-  <br>Express
-  <br>React Native, React-bootstrap
-  <br>Node.js
-</p>
-<hr>
-<p>
-  JsonWebTokens in cookies for authentification flow.
-  <br>React Native and React-bootstrap for Front-End styling and logic.
-  <br>Mongoose for MongoDB connection and models.
-</p>
-<hr>
-<h3>TODO:</h3>
-<p>
-  Websockets for live-chat functionality.
-</p>
+# Small social-media-like web application
+
+## Tech Stack
+
+- **MongoDB** (with Mongoose)
+- **Express.js**
+- **Node.js**
+- **React** (with React-Bootstrap for UI)
+- **Vite** (for fast React development)
+- **TypeScript** (full-stack)
+- **Jest** (for backend testing)
+- **Socket.IO** (for real-time chat)
+- **Cloudinary** (for image uploads)
+
+---
+
+## Features
+
+- User registration and authentication (JWT in cookies)
+- Create, edit, and delete posts (with optional images)
+- Responsive news feed
+- User profiles
+- Real-time chatrooms (WebSockets)
+- File upload support (Cloudinary)
+- Role-based access (user/admin)
+- Modern UI with React-Bootstrap
+
+---
+
+## Project Structure
+
+- `api/` – Express backend (TypeScript, MongoDB, REST API, Socket.IO)
+- `client/` – React frontend (Vite, TypeScript, React-Bootstrap)
+
+---
+
+## Getting Started
+
+1. **Install dependencies**  
+   In both `api/` and `client/` folders:
+   ```sh
+   npm install
+   ```

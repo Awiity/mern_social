@@ -34,4 +34,10 @@ roomRoutes.delete('/rooms/:roomId/users/:userId', roomController.removeUserFromR
 // Get room statistics
 roomRoutes.get('/rooms/:roomId/stats', roomController.getRoomStats.bind(roomController));
 
+// Create a private room
+roomRoutes.post('/rooms/private', roomController.createPrivateRoom.bind(roomController));
+
+// Get rooms for a specific user
+roomRoutes.get('/rooms/user/:userId', roomController.getUserRooms.bind(roomController));
+
 export default roomRoutes;

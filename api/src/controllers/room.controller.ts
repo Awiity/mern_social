@@ -7,8 +7,9 @@ export class RoomController {
     // Create a new room
     async createRoom(req: Request, res: Response): Promise<void> {
         try {
-            const validatedData = roomsSchema.parse(req.body);
+            console.log('Creating room with data:', req.body);
 
+            const validatedData = roomsSchema.parse(req.body);
             // Check if room already exists
             const existingRoom = await RoomModel.findOne({ name: validatedData.name });
             if (existingRoom) {
@@ -441,5 +442,61 @@ export class RoomController {
             console.error('Error searching rooms:', error);
             res.status(500).json({ error: 'Failed to search rooms' });
         }
+    }
+    async createPrivateRoom(req: Request, res: Response): Promise<void> {
+        try {
+            const { userId1, userId2 } = req.body;
+
+            // Check if private room already exists
+            const existingRoom = await RoomModel.findOne({
+                type: 'private',
+                'users.id': { $all: [userId1, userId2] }
+            });
+
+            if (existingRoom) {
+                res.json({ success: true, data: existingRoom });
+                return;
+            }
+
+            // Create new private room
+            const room = new RoomModel({
+                name: `Private chat`,
+                type: 'private',
+                users: [
+                    { id: userId1, username: req.body.username1, socketId: '' },
+                    { id: userId2, username: req.body.username2, socketId: '' }
+                ]
+            });
+
+            const savedRoom = await room.save();
+            res.status(201).json({ success: true, data: savedRoom });
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to create private room' });
+        }
+    }
+
+    // Get user's rooms
+    async getUserRooms(req: Request, res: Response): Promise<void> {
+        try {
+            const { userId } = req.params;
+
+            const rooms = await RoomModel.find({
+                $or: [
+                    { 'users.id': userId },
+                    { type: 'general' }
+                ]
+            }).sort({ lastActivity: -1 });
+
+            res.json({ success: true, data: rooms });
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to fetch user rooms' });
+        }
+    }
+
+    // Update room activity
+    async updateRoomActivity(roomId: string) {
+        await RoomModel.findByIdAndUpdate(roomId, {
+            lastActivity: new Date()
+        });
     }
 }
