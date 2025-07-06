@@ -27,6 +27,8 @@
 
 ---
 
+![alt text](![alt text](https://github.com/Awiity/mern-social/blob/main/readme_img/login-page.png?raw=true))
+
 ## Project Structure
 
 - `api/` – Express backend (TypeScript, MongoDB, REST API, Socket.IO)
