@@ -27,7 +27,7 @@
 
 ---
 
-![alt text](![alt text](https://github.com/Awiity/mern-social/blob/main/readme_img/login-page.png?raw=true))
+![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/login-page.png?raw=true)
 
 ## Project Structure
 
