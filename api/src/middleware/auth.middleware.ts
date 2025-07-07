@@ -44,8 +44,7 @@ export const authenticate = async (
     try {
         const decodedRefresh = jwt.verify(refreshToken, config.jwt_refresh_secret) as jwt.JwtPayload;
         const user = await UserModel.findById(decodedRefresh.userId).select('+refreshToken +_id +role').exec();
-        console.log(user?.refreshToken?.slice(user.refreshToken.length - 5, user.refreshToken.length - 1),
-                    " ", refreshToken.slice(refreshToken.length - 5, refreshToken.length - 1));
+
         if (!user || user.refreshToken !== refreshToken) {
             res.clearCookie('refreshToken');
             throw new ApiError(401, "Invalid refresh token XDDDDD");

@@ -7,7 +7,7 @@ export const roomsSchema = z.object({
     users: z.array(z.object({
         id: z.string(),
         username: z.string(),
-        socketId: z.string()
+        socketId: z.string().optional()
     })).optional(),
     isActive: z.boolean().default(true),
     lastActivity: z.date().optional()
@@ -32,9 +32,10 @@ const roomSchema = new mongoose.Schema<IRoomDocument>({
     name: { type: String, required: true },
     type: { type: String, enum: ['general', 'private', 'group'], default: 'group' },
     users: [{
+        _id: false,
         id: { type: String, required: true },
         username: { type: String, required: true },
-        socketId: { type: String, required: true }
+        socketId: { type: String, required: false }
     }],
     isActive: { type: Boolean, default: true },
     lastActivity: { type: Date, default: Date.now },

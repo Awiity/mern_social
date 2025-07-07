@@ -19,11 +19,10 @@ import {
 } from './types/socket.types';
 import { Server } from 'socket.io';
 import { Types } from 'mongoose';
-
+import messageRoutes from './routes/message.routes';
 
 const cors = require('cors');
 const http = require('http');
-
 
 const app = express();
 const server = http.createServer(app);
@@ -34,12 +33,20 @@ const io = new Server<
     SocketData
 >(server, {
     cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:3000",
-        methods: ["GET", "POST"]
+        origin: [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:3001",
+            process.env.CLIENT_URL || "http://localhost:5173"
+        ],
+        methods: ["GET", "POST"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"]
     }
 });
 
 const roomManager = new RoomManager();
+
 // Socket.io connection
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
@@ -52,6 +59,14 @@ io.on('connection', (socket) => {
             if (currentRoom) {
                 socket.leave(currentRoom);
                 roomManager.removeUserFromRoom(currentRoom, socket.data.userId || socket.id);
+                
+                // Notify the room that user left
+                socket.to(currentRoom).emit('user-left', {
+                    message: `${username} left the room`,
+                    username,
+                    userId: socket.data.userId || socket.id,
+                    timestamp: new Date()
+                });
             }
 
             // Join new room
@@ -76,7 +91,7 @@ io.on('connection', (socket) => {
             const roomUsers = roomManager.getRoomUsers(roomName);
             io.to(roomName).emit('room-users', { users: roomUsers });
 
-            // Notify others in room
+            // Notify others in room that user joined
             socket.to(roomName).emit('user-joined', {
                 message: `${username} joined the room`,
                 username,
@@ -130,8 +145,14 @@ io.on('connection', (socket) => {
                 return;
             }
 
+            // Validate message
+            if (!message || message.trim().length === 0 || message.length > 1000) {
+                socket.emit('error', 'Invalid message');
+                return;
+            }
+
             const chatMessage: ChatMessage = {
-                id: Types.ObjectId.toString(),
+                id: new Types.ObjectId().toString(),
                 message: message.trim(),
                 username,
                 userId: socket.data.userId,
@@ -139,13 +160,7 @@ io.on('connection', (socket) => {
                 timestamp: new Date()
             };
 
-            // Validate message
-            if (!chatMessage.message || chatMessage.message.length > 1000) {
-                socket.emit('error', 'Invalid message');
-                return;
-            }
-
-            // Broadcast message to all users in the room
+            // Broadcast message to all users in the room (including sender)
             io.to(roomName).emit('receive-message', chatMessage);
 
             console.log(`Message in ${roomName} from ${username}: ${message}`);
@@ -157,58 +172,89 @@ io.on('connection', (socket) => {
 
     // Handle typing indicators
     socket.on('typing', ({ roomName, username }: Omit<TypingData, 'isTyping'>) => {
-        socket.to(roomName).emit('user-typing', {
-            username,
-            roomName,
-            isTyping: true
-        });
+        try {
+            // Only send typing indicator to others in the room (not to sender)
+            socket.to(roomName).emit('user-typing', {
+                username,
+                roomName,
+                isTyping: true
+            });
+        } catch (error) {
+            console.error('Error handling typing:', error);
+        }
     });
 
     socket.on('stop-typing', ({ roomName, username }: Omit<TypingData, 'isTyping'>) => {
-        socket.to(roomName).emit('user-typing', {
-            username,
-            roomName,
-            isTyping: false
-        });
+        try {
+            // Only send stop typing indicator to others in the room (not to sender)
+            socket.to(roomName).emit('user-typing', {
+                username,
+                roomName,
+                isTyping: false
+            });
+        } catch (error) {
+            console.error('Error handling stop typing:', error);
+        }
     });
 
     // Handle disconnection
     socket.on('disconnect', (reason) => {
         console.log('User disconnected:', socket.id, 'Reason:', reason);
 
-        if (socket.data.userId && socket.data.username) {
-            // Remove user from all rooms
-            const roomsLeft = roomManager.removeUserFromAllRooms(socket.data.userId);
+        if (socket.data.userId && socket.data.username && socket.data.currentRoom) {
+            // Remove user from current room
+            roomManager.removeUserFromRoom(socket.data.currentRoom, socket.data.userId);
 
-            // Notify all rooms the user left
+            // Send updated user list to the room
+            const roomUsers = roomManager.getRoomUsers(socket.data.currentRoom);
+            io.to(socket.data.currentRoom).emit('room-users', { users: roomUsers });
+
+            // Notify the room that user disconnected
+            socket.to(socket.data.currentRoom).emit('user-left', {
+                message: `${socket.data.username} disconnected`,
+                username: socket.data.username,
+                userId: socket.data.userId,
+                timestamp: new Date()
+            });
+        }
+
+        // Also remove user from all rooms (fallback)
+        if (socket.data.userId && socket.data.username) {
+            const roomsLeft = roomManager.removeUserFromAllRooms(socket.data.userId);
+            
             roomsLeft.forEach(roomName => {
                 const roomUsers = roomManager.getRoomUsers(roomName);
                 io.to(roomName).emit('room-users', { users: roomUsers });
-
-                io.to(roomName).emit('user-left', {
-                    message: `${socket.data.username} disconnected`,
-                    username: socket.data.username!,
-                    userId: socket.data.userId!,
-                    timestamp: new Date()
-                });
             });
         }
     });
+
+    // Handle connection errors
+
+    // Handle socket errors
+    socket.on('error', (error) => {
+        console.error('Socket error:', error);
+    });
 });
 
-// Error handling
+// Error handling for Socket.IO engine
 io.engine.on("connection_error", (err) => {
     console.log('Connection error:', err.req, err.code, err.message, err.context);
 });
 
-//Middleware
+// Middleware
+app.use(cors({
+    credentials: true,
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:3001',
+        process.env.CLIENT_URL || 'http://localhost:5173'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}));
 app.use(express.json());
-app.use(cors(
-    {
-        credentials: true,
-        origin: 'http://localhost:5173'
-    }
-));
 
 app.use(cookieParser());
 connectDB();
@@ -217,15 +263,15 @@ connectDB();
 app.use('/api', userRoutes);
 app.use('/api', postRoutes);
 app.use('/api', roomRoutes);
+app.use('/api', messageRoutes);
 
+// Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res.status(500).json({ message: "Internal Server Error!!!" });
 });
 
-
-
-
-app.listen(config.port, () => {
+// Start server
+server.listen(config.port, () => {
     console.log("Server started, listening to port", config.port);
 });

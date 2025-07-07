@@ -7,10 +7,7 @@ export class RoomController {
     // Create a new room
     async createRoom(req: Request, res: Response): Promise<void> {
         try {
-            console.log('Creating room with data:', req.body);
-
             const validatedData = roomsSchema.parse(req.body);
-            // Check if room already exists
             const existingRoom = await RoomModel.findOne({ name: validatedData.name });
             if (existingRoom) {
                 res.status(409).json({ error: 'Room already exists' });
@@ -19,17 +16,24 @@ export class RoomController {
 
             const room = new RoomModel({
                 name: validatedData.name,
-                users: validatedData.users || []
+                users: validatedData.users || [],
+                type: validatedData.type || 'group',
+                isActive: validatedData.isActive !== undefined ? validatedData.isActive : true,
+                lastActivity: validatedData.lastActivity || new Date()
             });
+            room.users?.forEach(user => {
+                console.log('User in room:', user)
+            })
 
             const savedRoom = await room.save();
-
+            console.log('Room created successfully:', savedRoom);
             res.status(201).json({
                 success: true,
                 message: 'Room created successfully',
                 data: savedRoom
             });
         } catch (error) {
+            console.error('Error creating room:', error);
             if (error instanceof Error) {
                 res.status(400).json({
                     error: 'Failed to create room',

@@ -8,6 +8,7 @@ import { NewsPage } from './Pages/news.page';
 import { RegisterPage } from './Pages/register.page';
 import { UserPage } from './Pages/user.page';
 //import ChatRoom from './Pages/chatroom.page';
+import ChatRoomPage from './Pages/chatroom.page';
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                     <Route path='register' element={<RegisterPage />}></Route>
                     <Route path='user/:id' element={<ProtectedRoute><UserPage></UserPage></ProtectedRoute>}></Route>
                     {/*<Route path='chatroom' element={<ProtectedRoute><ChatRoom></ChatRoom></ProtectedRoute>}></Route>*/}
+                    <Route path='chatroom' element={<ProtectedRoute><ChatRoomPage></ChatRoomPage></ProtectedRoute>}></Route>
                 </Route>
 
             </Routes>

@@ -23,8 +23,6 @@ export const AuthController = {
             if (!isValid) throw new ApiError(401, "Invalid credentials");
             const { accessToken, refreshToken } = generateTokens(user);
             user.refreshToken = refreshToken;
-            console.log("tokens are being set", accessToken.slice(accessToken.length - 5, accessToken.length - 1),
-                refreshToken.slice(refreshToken.length - 5, refreshToken.length - 1));
             res.cookie("accessToken", accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
@@ -124,7 +122,6 @@ export const AuthController = {
     },
     async authme(req: Request, res: Response) {
         try {
-            //console.log(req.userId)
             const user = await UserModel.findById(req.userId).select(
                 "_id username email role" // Explicit safe field selection
             ).exec();

@@ -8,6 +8,7 @@ export class MessageController {
     async createMessage(req: Request, res: Response) {
         try {
             const validatedData = messageSchema.parse(req.body);
+            console.log('Message incoming: ', validatedData);
 
             const roomExists = await RoomModel.findById(validatedData.room_id);
             if (!roomExists) {
@@ -83,7 +84,6 @@ export class MessageController {
 
             const totalMessages = await MessageModel.countDocuments({ room_id: roomId });
             const totalPages = Math.ceil(totalMessages / limit);
-
             res.status(200).json({
                 success: true,
                 data: {
