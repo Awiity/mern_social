@@ -543,7 +543,7 @@ const ChatRoomPage: React.FC = () => {
                 </Col>
 
                 {/* Main Chat Area */}
-                <Col md={9} className="p-0 d-flex flex-column h-100">
+                <Col md={9} className="p-0 d-flex flex-column h-100 bg-dark">
                     {currentRoom ? (
                         <>
                             {/* Chat Header */}
@@ -593,7 +593,7 @@ const ChatRoomPage: React.FC = () => {
                             </div>
 
                             {/* Messages Area */}
-                            <div className="flex-grow-1 overflow-auto p-3" style={{ backgroundColor: '#f8f9fa' }}>
+                            <div className="flex-grow-1 overflow-auto p-3">
                                 {hasMoreMessages && (
                                     <div className="text-center mb-3">
                                         <Button variant="outline-primary" size="sm" onClick={loadMoreMessages}>
@@ -606,9 +606,9 @@ const ChatRoomPage: React.FC = () => {
                                     {messages.map(message => (
                                         <div
                                             key={message._id}
-                                            className={`d-flex ${message.user_id._id === currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
+                                            className={`d-flex ${message.user_id._id == currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
                                         >
-                                            <div className={`max-w-75 ${message.user_id._id === currentUser?._id ? 'bg-primary text-white' : 'bg-white border'} p-3 rounded-lg shadow-sm`}>
+                                            <div className={`max-w-75 ${message.user_id._id === currentUser?._id ? 'bg-primary text-white' : 'bg-dark border'} p-3 rounded-lg shadow-sm`}>
                                                 {message.user_id._id !== currentUser?._id && (
                                                     <small className="text-muted d-block mb-1">
                                                         {getSenderDisplayName(message)}
@@ -638,7 +638,7 @@ const ChatRoomPage: React.FC = () => {
                             </div>
 
                             {/* Message Input */}
-                            <div className="bg-white p-3 border-top">
+                            <div className="bg-dark p-3 border-top">
                                 <Form onSubmit={handleSendMessage}>
                                     <InputGroup>
                                         <Button variant="outline-secondary">
