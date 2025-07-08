@@ -21,6 +21,7 @@ import { Server } from 'socket.io';
 import { Types } from 'mongoose';
 import messageRoutes from './routes/message.routes';
 import likeRoutes from './routes/like.routes';
+import commentRoutes from './routes/comment.routes';
 
 const cors = require('cors');
 const http = require('http');
@@ -266,6 +267,7 @@ app.use('/api', postRoutes);
 app.use('/api', roomRoutes);
 app.use('/api', messageRoutes);
 app.use('/api', likeRoutes);
+app.use('/api', commentRoutes)
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

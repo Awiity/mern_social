@@ -44,7 +44,6 @@ export class LikeController {
     }
     async getLikesByPostId(req: Request, res: Response) {
         try {
-            console.log("Fetching likes for post ID:", req.params);
             const { postId: post_id } = req.params;
             if (!post_id) {
                 return res.status(400).send({ error: "Post ID is required" });
