@@ -104,7 +104,7 @@
 }
 
 .action-button {
-    color: #888888 !important;
+    color: #888888 ;
     border: none !important;
     background: transparent !important;
     display: flex !important;
