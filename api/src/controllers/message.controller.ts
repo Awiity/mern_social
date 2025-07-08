@@ -7,6 +7,7 @@ import { z } from 'zod';
 export class MessageController {
     async createMessage(req: Request, res: Response) {
         try {
+            console.log('Creating message with data:', req.body);
             const validatedData = messageSchema.parse(req.body);
             console.log('Message incoming: ', validatedData);
 

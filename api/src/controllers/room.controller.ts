@@ -471,7 +471,6 @@ export class RoomController {
                     { id: userId2, username: req.body.username2, socketId: '' }
                 ]
             });
-
             const savedRoom = await room.save();
             res.status(201).json({ success: true, data: savedRoom });
         } catch (error) {

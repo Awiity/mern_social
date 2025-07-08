@@ -15,6 +15,7 @@ export interface ChatMessage {
     message: string;
     username: string;
     userId: string;
+    userSocketId: string;
     roomName: string;
     timestamp: Date;
 }
@@ -28,6 +29,8 @@ export interface SendMessageData {
     roomName: string;
     message: string;
     username: string;
+    user_id: string;
+    user_socket_id: string;
 }
 
 export interface TypingData {

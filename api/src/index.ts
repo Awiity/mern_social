@@ -138,7 +138,7 @@ io.on('connection', (socket) => {
     });
 
     // Handle chat messages
-    socket.on('send-message', ({ roomName, message, username }: SendMessageData) => {
+    socket.on('send-message', ({ roomName, message, username, user_id, user_socket_id }: SendMessageData) => {
         try {
             if (!socket.data.userId || !socket.data.username) {
                 socket.emit('error', 'User not authenticated');
@@ -155,11 +155,11 @@ io.on('connection', (socket) => {
                 id: new Types.ObjectId().toString(),
                 message: message.trim(),
                 username,
-                userId: socket.data.userId,
+                userId: user_id,
+                userSocketId: user_socket_id || socket.id,
                 roomName,
                 timestamp: new Date()
             };
-
             // Broadcast message to all users in the room (including sender)
             io.to(roomName).emit('receive-message', chatMessage);
 

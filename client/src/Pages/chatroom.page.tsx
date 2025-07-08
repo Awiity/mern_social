@@ -259,13 +259,15 @@ const ChatRoomPage: React.FC = () => {
                 socket.emit('send-message', {
                     roomName: currentRoom.name,
                     message: newMessage.trim(),
+                    user_id: currentUser._id,
+                    user_socket_id: socket.id,
                     username: currentUser.username
                 });
 
                 // Also save to database via API
                 const messageData = {
                     content: newMessage.trim(),
-                    user: currentUser,
+                    user_id: currentUser._id,
                     room_id: currentRoom._id
                 };
 
@@ -362,8 +364,8 @@ const ChatRoomPage: React.FC = () => {
                     currentUser.username,
                     user.username
                 );
-                setRooms(prev => [...prev, privateRoom]);
-                handleRoomChange(privateRoom);
+                setRooms(prev => [...prev, privateRoom.data]);
+                handleRoomChange(privateRoom.data);
             } catch (error) {
                 console.error('Error creating private room:', error);
             }
@@ -482,7 +484,7 @@ const ChatRoomPage: React.FC = () => {
                                     >
                                         <div className="flex-grow-1">
                                             <div className="d-flex justify-content-between align-items-center">
-                                                <strong className="text-truncate">{room.name}</strong>
+                                                <strong className="text-truncate">{room.type !== 'private' ? room.name : room.users![0].username == currentUser?.username ? room.users![1].username : room.users![0].username }</strong>
                                                 <small className="text-muted">
                                                     {room.lastActivity && new Date(room.lastActivity).toLocaleTimeString()}
                                                 </small>
@@ -606,16 +608,16 @@ const ChatRoomPage: React.FC = () => {
                                     {messages.map(message => (
                                         <div
                                             key={message._id}
-                                            className={`d-flex ${message.user_id._id == currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
+                                            className={`d-flex message-box ${message.user_id._id == currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
                                         >
-                                            <div className={`max-w-75 ${message.user_id._id === currentUser?._id ? 'bg-primary text-white' : 'bg-dark border'} p-3 rounded-lg shadow-sm`}>
-                                                {message.user_id._id !== currentUser?._id && (
-                                                    <small className="text-muted d-block mb-1">
+                                            <div className={`max-w-75 ${message.user_id._id === currentUser?._id ? 'bg-primary text-white' : 'bg-dark border'} p-3 rounded-lg shadow-sm rounded mt-1`} style={{ minWidth: '200px' }}>
+                                                {message.sender?._id !== currentUser?._id && (
+                                                    <small className="text-muted d-block">
                                                         {getSenderDisplayName(message)}
                                                     </small>
                                                 )}
                                                 <div>{message.content}</div>
-                                                <small className={`d-block mt-1 ${message.user_id._id === currentUser?._id ? 'text-white-50' : 'text-muted'}`}>
+                                                <small className={`d-block mt-1 text-end ${message.user_id._id === currentUser?._id ? 'text-white-50' : 'text-muted'}`}>
                                                     {new Date(message.createdAt).toLocaleTimeString()}
                                                 </small>
                                             </div>
@@ -625,7 +627,7 @@ const ChatRoomPage: React.FC = () => {
                                     {/* Typing indicator */}
                                     {typingUsers.length > 0 && (
                                         <div className="d-flex justify-content-start">
-                                            <div className="bg-light p-2 rounded-lg shadow-sm">
+                                            <div className="bg-dark p-2 rounded-lg shadow-sm">
                                                 <small className="text-muted">
                                                     {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
                                                 </small>
