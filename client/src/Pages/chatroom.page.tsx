@@ -115,7 +115,7 @@ const ChatRoomPage: React.FC = () => {
             // Listen for incoming messages
             newSocket.on('receive-message', (chatMessage: any) => {
                 console.log('Received message:', chatMessage);
-                
+
                 // Convert the backend message format to frontend format
                 const message: Message = {
                     _id: chatMessage.id,
@@ -310,7 +310,7 @@ const ChatRoomPage: React.FC = () => {
 
     // Handle create room
     const handleCreateRoom = async () => {
-        
+
         if (newRoomName.trim() && currentUser) {
             try {
                 const roomData = {
@@ -484,7 +484,7 @@ const ChatRoomPage: React.FC = () => {
                                     >
                                         <div className="flex-grow-1">
                                             <div className="d-flex justify-content-between align-items-center">
-                                                <strong className="text-truncate">{room.type !== 'private' ? room.name : room.users![0].username == currentUser?.username ? room.users![1].username : room.users![0].username }</strong>
+                                                <strong className="text-truncate">{room.type !== 'private' ? room.name : room.users![0].username == currentUser?.username ? room.users![1].username : room.users![0].username}</strong>
                                                 <small className="text-muted">
                                                     {room.lastActivity && new Date(room.lastActivity).toLocaleTimeString()}
                                                 </small>
@@ -545,11 +545,12 @@ const ChatRoomPage: React.FC = () => {
                 </Col>
 
                 {/* Main Chat Area */}
-                <Col md={9} className="p-0 d-flex flex-column h-100 bg-dark">
+                {/* Main Chat Area */}
+                <Col md={9} className="p-0 chat-main-column">
                     {currentRoom ? (
                         <>
                             {/* Chat Header */}
-                            <div className="bg-dark p-3 border-bottom">
+                            <div className="chat-header-section bg-dark p-3 border-bottom">
                                 <div className="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h5 className="mb-0 text-white">{currentRoom.name}</h5>
@@ -595,7 +596,7 @@ const ChatRoomPage: React.FC = () => {
                             </div>
 
                             {/* Messages Area */}
-                            <div className="flex-grow-1 overflow-auto p-3">
+                            <div className="chat-area">
                                 {hasMoreMessages && (
                                     <div className="text-center mb-3">
                                         <Button variant="outline-primary" size="sm" onClick={loadMoreMessages}>
@@ -604,7 +605,7 @@ const ChatRoomPage: React.FC = () => {
                                     </div>
                                 )}
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 overflow-auto p-3" style={{ height: 'calc(100vh - 210px)' }}>
                                     {messages.map(message => (
                                         <div
                                             key={message._id}
@@ -640,7 +641,7 @@ const ChatRoomPage: React.FC = () => {
                             </div>
 
                             {/* Message Input */}
-                            <div className="bg-dark p-3 border-top">
+                            <div className="chat-input-section p-3">
                                 <Form onSubmit={handleSendMessage}>
                                     <InputGroup>
                                         <Button variant="outline-secondary">
