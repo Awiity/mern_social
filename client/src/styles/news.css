@@ -1,3 +1,48 @@
+/* News page specific styles - Post styles moved to post.css */
+
+.add-btn {
+    background: linear-gradient(45deg, #28a745, #20c997) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.add-btn:hover {
+    background: linear-gradient(45deg, #218838, #1ea085) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3) !important;
+}
+
+/* News feed specific styles */
+.news-feed-container {
+    background: #1a1d21;
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.news-header {
+    background: #2b3035;
+    border-bottom: 1px solid #4a4a4a;
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+}
+
+.news-header h1 {
+    color: #ffffff;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.news-feed {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
 .post-card {
     background: #2b3035 !important;
     border: 1px solid #4a4a4a !important;
@@ -104,7 +149,7 @@
 }
 
 .action-button {
-    color: #888888 ;
+    color: #888888;
     border: none !important;
     background: transparent !important;
     display: flex !important;
@@ -148,24 +193,49 @@
     color: #b0b0b0 !important;
 }
 
-.add-btn {
-    background: linear-gradient(45deg, #28a745, #20c997) !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 12px !important;
-    font-weight: 600 !important;
-    font-size: 1.05rem !important;
-    transition: all 0.3s ease !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.add-btn:hover {
-    background: linear-gradient(45deg, #218838, #1ea085) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3) !important;
+/* Loading states */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
 }
 
+.loading-spinner .spinner-border {
+    color: #28a745;
+}
+
+/* Empty state */
+.empty-feed {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-feed h3 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.empty-feed p {
+    color: #b0b0b0;
+    font-size: 16px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
+    .news-feed-container {
+        padding: 1rem 0;
+    }
+
+    .news-header {
+        padding: 1rem 0;
+        margin-bottom: 1rem;
+    }
+
+    .news-header h1 {
+        font-size: 1.5rem;
+    }
+
     .post-header {
         padding: 1.25rem 1.25rem 0.5rem 1.25rem !important;
     }
@@ -220,6 +290,18 @@
 }
 
 @media (max-width: 576px) {
+    .news-feed-container {
+        padding: 0.5rem 0;
+    }
+
+    .news-header {
+        padding: 0.75rem 0;
+    }
+
+    .news-header h1 {
+        font-size: 1.25rem;
+    }
+
     .post-header {
         padding: 1rem 1rem 0.5rem 1rem !important;
     }
@@ -270,5 +352,10 @@
 
     .action-button {
         font-size: 12px !important;
+    }
+
+    .add-btn {
+        padding: 10px !important;
+        font-size: 0.9rem !important;
     }
 }
