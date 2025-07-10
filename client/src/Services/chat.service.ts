@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class ChatService {
-    private baseUrl = 'http://localhost:4000/api'; // Your API base URL
+    private baseUrl = `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api`;
 
     async getRooms(userId: string) {
         const response = await fetch(`${this.baseUrl}/rooms/user/${userId}`);

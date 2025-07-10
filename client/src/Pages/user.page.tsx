@@ -33,7 +33,7 @@ export function UserPage() {
 
     // Fetch user profile data
     const { data: userProfile, isLoading, error, reload } = useFetch<UserProfile>(
-        `http://localhost:4000/api/users/${id}`
+        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/users/${id}`
     );
 
     const isOwner = currentUser && userProfile && currentUser._id === userProfile._id;
@@ -84,7 +84,7 @@ export function UserPage() {
                 return;
             }
 
-            const response = await fetch(`http://localhost:4000/api/users/${id}`, {
+            const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/users/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

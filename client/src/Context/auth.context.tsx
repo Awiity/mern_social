@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await axios.get('http://localhost:4000/api/auth/me', { withCredentials: true });
+                const response = await axios.get(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/auth/me`, { withCredentials: true });
                 //console.log( response);
                 setUser(response.data);
             } catch (error) {
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     async function login(credentials: ILoginCred) {
-        const response = await axios.post("http://localhost:4000/api/auth/login", credentials);
+        const response = await axios.post(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/auth/login`, credentials);
         if (response.statusText !== "OK") return response
         setUser(response.data.user);
         console.log("login successfull");
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function logout() {
         try {
-            await axios.post("http://localhost:4000/api/auth/logout");
+            await axios.post(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/auth/logout`);
             setUser(null);
         } catch(error) {
             console.error(error);

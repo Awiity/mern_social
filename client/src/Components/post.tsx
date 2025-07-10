@@ -14,11 +14,11 @@ interface Like {
 
 export function Post({ post }: { post: IPostData }) {
     const { data: likes, setData: setLikes } = useFetch<Like[]>(
-        `http://localhost:4000/api/likes/post/${post._id}`
+        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/likes/post/${post._id}`
     );
 
     const { data: commentsAmount } = useFetch<number>(
-        `http://localhost:4000/api/comments/count/post/${post._id}`
+        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/comments/count/post/${post._id}`
     );
 
     const { user: currentUser } = useAuth(); // Assuming this is the logged-in user's ID
@@ -49,14 +49,14 @@ export function Post({ post }: { post: IPostData }) {
 
             // Server request
             if (userLike) {
-                await fetch(`http://localhost:4000/api/likes/${previousLikeId}`, {
+                await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/likes/${previousLikeId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
             } else {
-                const response = await fetch(`http://localhost:4000/api/likes`, {
+                const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/likes`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

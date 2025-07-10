@@ -104,7 +104,7 @@ const ChatRoomPage: React.FC = () => {
         loadAllUsers();
         if (isAuthenticated && currentUser) {
             // Connect to your backend socket server
-            const newSocket = io('http://localhost:4000');
+            const newSocket = io(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}`);
             setSocket(newSocket);
             console.log('Socket connected:', newSocket.id);
             // Socket event listeners
@@ -216,7 +216,7 @@ const ChatRoomPage: React.FC = () => {
 
     const loadAllUsers = async () => {
         try {
-            const response = await fetch('http://localhost:4000/api/users');
+            const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/users`);
             const users = await response.json();
             setAllUsers(users);
         } catch (error) {

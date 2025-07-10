@@ -18,7 +18,7 @@ interface IPostData {
 }
 
 export function NewsPage() {
-    const { data, setData, error, isLoading } = useFetch("http://localhost:4000/api/posts");
+    const { data, setData, error, isLoading } = useFetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/posts`);
     const [showModal, setShowModal] = useState<boolean>(false);
     /*
     async function handleItemRemove(_id: string) {

@@ -27,13 +27,13 @@ export function PostPage() {
 
     // Fetch post data
     const { data: post, isLoading: postLoading, error: postError } = useFetch<IPostData>(
-        `http://localhost:4000/api/posts/${id}`
+        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/posts/${id}`
     );
 
 
     // Fetch comments
     const { data: comments, setData: setComments } = useFetch<Comment[]>(
-        `http://localhost:4000/api/comments/post/${id}`
+        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/comments/post/${id}`
     );
 
 
@@ -45,7 +45,7 @@ export function PostPage() {
         setSubmitError(null);
 
         try {
-            const response = await fetch(`http://localhost:4000/api/comments`, {
+            const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

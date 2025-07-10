@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
-const api_url: string = "http://localhost:4000/api/";
+const api_url: string = `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/`;
 
 export interface IPostData {
     title?: string | undefined,
