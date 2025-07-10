@@ -6,6 +6,9 @@ import { IPostData } from '../Network/post.api';
 import useFetch from '../Hooks/useFetch';
 import { useAuth } from '../Context/auth.context';
 import { Post } from '../Components/post';
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    : process.env.DEV_API_URL || 'http://localhost:4000';
 
 interface Comment {
     _id: string;
@@ -27,13 +30,13 @@ export function PostPage() {
 
     // Fetch post data
     const { data: post, isLoading: postLoading, error: postError } = useFetch<IPostData>(
-        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/posts/${id}`
+        `${API_BASE_URL}/api/posts/${id}`
     );
 
 
     // Fetch comments
     const { data: comments, setData: setComments } = useFetch<Comment[]>(
-        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/comments/post/${id}`
+        `${API_BASE_URL}/api/comments/post/${id}`
     );
 
 
@@ -45,7 +48,7 @@ export function PostPage() {
         setSubmitError(null);
 
         try {
-            const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/comments`, {
+            const response = await fetch(`${API_BASE_URL}/api/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

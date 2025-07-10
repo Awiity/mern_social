@@ -5,6 +5,9 @@ import { IPostData } from "../Network/post.api";
 import useFetch from "../Hooks/useFetch";
 import { useAuth } from "../Context/auth.context";
 import '../styles/post.css'; // Import the separated CSS
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    : process.env.DEV_API_URL || 'http://localhost:4000';
 
 interface Like {
     _id: string;
@@ -14,11 +17,11 @@ interface Like {
 
 export function Post({ post }: { post: IPostData }) {
     const { data: likes, setData: setLikes } = useFetch<Like[]>(
-        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/likes/post/${post._id}`
+        `${API_BASE_URL}/api/likes/post/${post._id}`
     );
 
     const { data: commentsAmount } = useFetch<number>(
-        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/comments/count/post/${post._id}`
+        `${API_BASE_URL}/api/comments/count/post/${post._id}`
     );
 
     const { user: currentUser } = useAuth(); // Assuming this is the logged-in user's ID
@@ -49,14 +52,14 @@ export function Post({ post }: { post: IPostData }) {
 
             // Server request
             if (userLike) {
-                await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/likes/${previousLikeId}`, {
+                await fetch(`${API_BASE_URL}/api/likes/${previousLikeId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
             } else {
-                const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/likes`, {
+                const response = await fetch(`${API_BASE_URL}/api/likes`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

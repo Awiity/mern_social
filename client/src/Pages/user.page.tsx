@@ -6,6 +6,9 @@ import useFetch from '../Hooks/useFetch';
 import { useAuth } from '../Context/auth.context';
 import { User, Edit3, Mail, Calendar, Shield } from 'lucide-react';
 import '../styles/userprofile.css';
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    : process.env.DEV_API_URL || 'http://localhost:4000';
 
 interface UserProfile {
     _id: string;
@@ -33,7 +36,7 @@ export function UserPage() {
 
     // Fetch user profile data
     const { data: userProfile, isLoading, error, reload } = useFetch<UserProfile>(
-        `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/users/${id}`
+        `${API_BASE_URL}/api/users/${id}`
     );
 
     const isOwner = currentUser && userProfile && currentUser._id === userProfile._id;
@@ -84,7 +87,7 @@ export function UserPage() {
                 return;
             }
 
-            const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/users/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

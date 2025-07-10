@@ -1,4 +1,7 @@
 import axios from "axios";
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    : process.env.DEV_API_URL || 'http://localhost:4000';
 
 export interface ILoginCred {
     email: string | null,
@@ -17,14 +20,14 @@ export interface IRegisterCred {
 }
 axios.defaults.withCredentials = true;
 export async function register(credentials: IRegisterCred) {
-    const response = await axios.post(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/auth/register`, credentials)
+    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, credentials)
     //if (response.statusText !== "OK") return response
     //localStorage.setItem('auth', response.data);
     return response;
 }
 
 export async function updateUser(id: string, body: object) {
-    const response = await axios.patch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/users/:` + id, body);
+    const response = await axios.patch(`${API_BASE_URL}/api/users/:` + id, body);
     return response;
 }
 

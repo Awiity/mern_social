@@ -94,6 +94,9 @@ const ChatRoomPage: React.FC = () => {
     const [messageSearchQuery, setMessageSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
+    const API_BASE_URL = process.env.NODE_ENV === 'production'
+        ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+        : process.env.DEV_API_URL || 'http://localhost:4000';
 
     // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -104,7 +107,7 @@ const ChatRoomPage: React.FC = () => {
         loadAllUsers();
         if (isAuthenticated && currentUser) {
             // Connect to your backend socket server
-            const newSocket = io(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}`);
+            const newSocket = io(`${API_BASE_URL}`);
             setSocket(newSocket);
             console.log('Socket connected:', newSocket.id);
             // Socket event listeners
@@ -216,7 +219,7 @@ const ChatRoomPage: React.FC = () => {
 
     const loadAllUsers = async () => {
         try {
-            const response = await fetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/users`);
+            const response = await fetch(`${API_BASE_URL}/api/users`);
             const users = await response.json();
             setAllUsers(users);
         } catch (error) {

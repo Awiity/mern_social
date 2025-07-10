@@ -7,6 +7,9 @@ import { useState } from "react";
 import '../styles/news.css';
 import add_svg from '../Static/SVGs/add.svg';
 import { Post } from "../Components/post";
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    : process.env.DEV_API_URL || 'http://localhost:4000';
 
 interface IPostData {
     title: string,
@@ -18,7 +21,7 @@ interface IPostData {
 }
 
 export function NewsPage() {
-    const { data, setData, error, isLoading } = useFetch(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/posts`);
+    const { data, setData, error, isLoading } = useFetch(`${API_BASE_URL}/api/posts`);
     const [showModal, setShowModal] = useState<boolean>(false);
     /*
     async function handleItemRemove(_id: string) {
@@ -39,7 +42,7 @@ export function NewsPage() {
             </div>
             <AddPostModal show={showModal} onClose={() => setShowModal(false)} posts={data} setPosts={setData} />
             {data instanceof Array && data.length > 0 ? data.map((post: IPostData) => (
-                <Post key={post._id} post={post}  />
+                <Post key={post._id} post={post} />
             )) : (isLoading ? (error instanceof Error ? <Alert variant="danger">{error.message}</Alert>
                 : <Spinner />) : <p className="text-center mt-3">News feed is empty</p>)}
         </Container>

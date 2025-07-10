@@ -2,6 +2,11 @@ import axios, { AxiosResponse } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ILoginCred } from "../Network/user.api";
 axios.defaults.withCredentials = true;
+
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    : process.env.DEV_API_URL || 'http://localhost:4000';
+
 type User = {
     _id: string;
     username: string,
@@ -26,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await axios.get(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/auth/me`, { withCredentials: true });
+                const response = await axios.get(`${API_BASE_URL}/api/auth/me`, { withCredentials: true });
                 //console.log( response);
                 setUser(response.data);
             } catch (error) {
@@ -40,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     async function login(credentials: ILoginCred) {
-        const response = await axios.post(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/auth/login`, credentials);
+        const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
         if (response.statusText !== "OK") return response
         setUser(response.data.user);
         console.log("login successfull");
@@ -49,9 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function logout() {
         try {
-            await axios.post(`${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api/auth/logout`);
+            await axios.post(`${API_BASE_URL}/api/auth/logout`);
             setUser(null);
-        } catch(error) {
+        } catch (error) {
             console.error(error);
         }
         //localStorage.removeItem('auth');

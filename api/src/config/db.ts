@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import config from './config';
 
-const mongodb_uri = config.mongodb_uri;
+const mongodb_uri = process.env.MONGODB_URI || config.mongodb_uri;
 
 export const connectDB = async () => {
     try {

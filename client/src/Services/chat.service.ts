@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    : process.env.DEV_API_URL || 'http://localhost:4000';
+
 export class ChatService {
-    private baseUrl = `${process.env.NODE_ENV == 'production' ? process.env.BASE_URL : 'http://localhost:4000'}/api`;
+    private baseUrl = `${API_BASE_URL}/api`;
 
     async getRooms(userId: string) {
         const response = await fetch(`${this.baseUrl}/rooms/user/${userId}`);
