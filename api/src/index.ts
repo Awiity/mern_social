@@ -39,7 +39,7 @@ const io = new Server<
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:3001",
-            process.env.CLIENT_URL || "http://localhost:5173"
+            config.client_url || "http://localhost:5173"
         ],
         methods: ["GET", "POST"],
         credentials: true,
@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
             if (currentRoom) {
                 socket.leave(currentRoom);
                 roomManager.removeUserFromRoom(currentRoom, socket.data.userId || socket.id);
-                
+
                 // Notify the room that user left
                 socket.to(currentRoom).emit('user-left', {
                     message: `${username} left the room`,
@@ -223,7 +223,7 @@ io.on('connection', (socket) => {
         // Also remove user from all rooms (fallback)
         if (socket.data.userId && socket.data.username) {
             const roomsLeft = roomManager.removeUserFromAllRooms(socket.data.userId);
-            
+
             roomsLeft.forEach(roomName => {
                 const roomUsers = roomManager.getRoomUsers(roomName);
                 io.to(roomName).emit('room-users', { users: roomUsers });
@@ -251,7 +251,7 @@ app.use(cors({
         'http://localhost:3000',
         'http://localhost:5173',
         'http://localhost:3001',
-        process.env.CLIENT_URL || 'http://localhost:5173'
+        config.client_url || 'http://localhost:5173'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
@@ -275,7 +275,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     res.status(500).json({ message: "Internal Server Error!!!" });
 });
 
+module.exports = server;
+
 // Start server
-server.listen(config.port, () => {
-    console.log("Server started, listening to port", config.port);
-});
+if (config.node_env !== 'production') {
+    server.listen(config.port, () => {
+        console.log("Server started, listening to port", config.port);
+    });
+}

@@ -11,7 +11,9 @@ interface Config {
     refresh_token_expiry: string,
     cloudinary_key: string,
     cloudinary_secret: string,
-    clodinary_cloud_name: string
+    clodinary_cloud_name: string,
+    node_env?: string,
+    client_url?: string
 };
 
 const config: Config = {
@@ -23,7 +25,9 @@ const config: Config = {
     refresh_token_expiry: process.env.REFRESH_TOKEN_EXPIRY!,
     cloudinary_key: process.env.CLOUDINARY_KEY!,
     cloudinary_secret: process.env.CLOUDINARY_SECRET!,
-    clodinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME!
+    clodinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+    node_env: process.env.NODE_ENV,
+    client_url: process.env.CLIENT_URL
 };
 
 export default config;
