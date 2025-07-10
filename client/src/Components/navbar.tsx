@@ -10,7 +10,7 @@ const NavbarC = () => {
     //console.log("user: ", user);
     const navigate = useNavigate();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleLogout = async (e: React.MouseEvent<HTMLElement>) => {
+    const handleLogout = async () => {
         try {
             logout();
             navigate("/login");

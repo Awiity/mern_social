@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Card, Col, Row, Form, Alert, Spinner } from 'react-bootstrap';
+import { Button, Card, Form, Alert, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { timeSince } from '../Static/date.methods';
 import { IPostData } from '../Network/post.api';
@@ -32,7 +32,7 @@ export function PostPage() {
 
 
     // Fetch comments
-    const { data: comments, setData: setComments, reload: reloadComments } = useFetch<Comment[]>(
+    const { data: comments, setData: setComments } = useFetch<Comment[]>(
         `http://localhost:4000/api/comments/post/${id}`
     );
 
