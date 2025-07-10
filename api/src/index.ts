@@ -251,7 +251,7 @@ app.use(cors({
         'http://localhost:3000',
         'http://localhost:5173',
         'http://localhost:3001',
-        config.client_url || 'http://localhost:5173'
+        config.client_url || 'opal-social-mocha.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
