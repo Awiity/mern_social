@@ -13,7 +13,6 @@ interface RegisterFormData {
     lastname: string;
     description: string;
     address: string;
-    avatar: string;
     role: 'user'; // Default role
 }
 
@@ -28,7 +27,6 @@ export const RegisterPage: React.FC = () => {
         lastname: '',
         description: '',
         address: '',
-        avatar: '',
         role: 'user' // Default role
     });
     const [showAlert, setShowAlert] = useState<boolean>(false);
@@ -83,7 +81,7 @@ export const RegisterPage: React.FC = () => {
 
                                 {showAlert && (
                                     <Alert variant="success" className="custom-alert mb-4">
-                                        Registration attempt registered! (Implement your logic here)
+                                        Registration successful! Redirecting to login...
                                     </Alert>
                                 )}
 
@@ -206,18 +204,6 @@ export const RegisterPage: React.FC = () => {
                                             value={formData.address}
                                             onChange={handleInputChange}
                                             placeholder="Enter your address (optional)"
-                                            className="custom-input"
-                                        />
-                                    </Form.Group>
-
-                                    <Form.Group className="mb-4">
-                                        <Form.Label className="form-label">Avatar URL</Form.Label>
-                                        <Form.Control
-                                            type="url"
-                                            name="avatar"
-                                            value={formData.avatar}
-                                            onChange={handleInputChange}
-                                            placeholder="Enter avatar image URL (optional)"
                                             className="custom-input"
                                         />
                                     </Form.Group>

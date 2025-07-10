@@ -1,9 +1,8 @@
 import { Response, Request, NextFunction } from "express";
 import { ApiError } from "../utils/apiError";
 import { generateTokens } from "../utils/jwt";
-import jwt, { JsonWebTokenError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { UserModel } from "../models/user.model";
-import { AuthController } from "../controllers/auth.controller";
 import config from "../config/config";
 
 declare global {
@@ -22,6 +21,9 @@ export const authenticate = async (
 ) => {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
+    // log last 5 values of accessToken and refreshToken
+    console.log("Access Token:", accessToken && accessToken.slice(-5));
+    console.log("Refresh Token:", refreshToken && refreshToken.slice(-5));
     if (!accessToken && !refreshToken) throw new ApiError(401, "Unauthorized (No tokens provided)");
 
     try {
@@ -54,7 +56,7 @@ export const authenticate = async (
             httpOnly: true,
             //secure: process.env.NODE_ENV === 'production',
             maxAge: 15 * 60 * 1000,
-            sameSite: 'none'
+            sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax'
         });
         
         req.userId = user._id;

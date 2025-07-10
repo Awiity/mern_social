@@ -1,0 +1,15 @@
+.chat-button {
+    background: linear-gradient(45deg, #28a745, #20c997) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.chat-button:hover {
+    background: linear-gradient(45deg, #218838, #1ea085) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3) !important;
+}

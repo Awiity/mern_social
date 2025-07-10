@@ -9,6 +9,7 @@ import { RegisterPage } from './Pages/register.page';
 import { UserPage } from './Pages/user.page';
 import ChatRoomPage from './Pages/chatroom.page';
 import { PostPage } from './Pages/post.page';
+import HomePage from './Pages/home.page';
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
             <Routes>
                 <Route path='/' element={<Layout />} >
                     <Route path='login' element={<LoginPage />}></Route>
+                    <Route path='' element={<ProtectedRoute><HomePage /></ProtectedRoute>}></Route>
                     <Route path='*' element={<ProtectedRoute><NotFound /></ProtectedRoute>}></Route>
                     <Route path='news' element={<ProtectedRoute><NewsPage></NewsPage></ProtectedRoute>}></Route>
                     <Route path='register' element={<RegisterPage />}></Route>

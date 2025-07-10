@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
 import '../styles/login.css';
 import { useAuth } from '../Context/auth.context'
 import { useNavigate } from 'react-router';
+import { AxiosError } from 'axios';
 
 interface LoginFormData {
     email: string;
@@ -33,16 +34,18 @@ const LoginPage: React.FC = () => {
             const response = await login(formData);
             if (response.status === 200) {
                 setShowAlert(true);
+                setTimeout(() => { navigate('/news'); setShowAlert(false); }, 2000);
+
             } else {
                 console.error('Login failed:', response.statusText);
                 setError('Login failed. Please check your credentials.');
             }
         } catch (error) {
-            setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+            setError(error instanceof AxiosError ? error.response?.data.message : 'An unexpected error occurred');
+            setFormData({ ...formData, password: '' });
             console.error('Error during login:', error);
         }
-        setTimeout(() => { navigate('/news'); setShowAlert(false);}, 2000);
-        
+
     };
 
     return (
@@ -64,7 +67,7 @@ const LoginPage: React.FC = () => {
                                 )}
                                 {error && (
                                     <Alert variant="danger" className="custom-alert mb-4">
-                                        {error} 
+                                        {error}
                                     </Alert>
                                 )}
 

@@ -1,5 +1,5 @@
 // gonna be latest posted posts
-import { Alert, Button, Container, Spinner } from "react-bootstrap";
+import { Alert, Button, Col, Container, Row, Spinner } from "react-bootstrap";
 import useFetch from "../Hooks/useFetch";
 import AddPostModal from "../Components/add.post.modal";
 import { useState } from "react";
@@ -45,6 +45,23 @@ export function NewsPage() {
                 <Post key={post._id} post={post} />
             )) : (isLoading ? (error instanceof Error ? <Alert variant="danger">{error.message}</Alert>
                 : <Spinner />) : <p className="text-center mt-3">News feed is empty</p>)}
+            <footer className="py-4 mt-5 border-top border-success border-opacity-25">
+                <Container>
+                    <Row className="align-items-center">
+                        <Col md={8} className="text-center text-md-start">
+                            <p className="text-light mb-2">
+                                <span className="text-success fw-semibold">Created by Ruslan Kildibekov</span>
+                            </p>
+                            <p className="text-light opacity-75 mb-0 small">
+                                Built with React, TypeScript, React-Bootstrap, and Tailwind CSS.
+                                <span className="text-danger ms-2">♥</span> Made with passion for web development.
+                            </p>
+                        </Col>
+                        <Col md={4} className="text-center text-md-end">
+                        </Col>
+                    </Row>
+                </Container>
+            </footer>
         </Container>
     );
 

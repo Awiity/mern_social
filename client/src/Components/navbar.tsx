@@ -29,7 +29,6 @@ const NavbarC = () => {
                     <Nav className="me-auto">
                         <Nav.Link href="/chatroom" className="hover-underline">Chat</Nav.Link>
                         <Nav.Link href="/news" className="hover-underline">News</Nav.Link>
-                        <Nav.Link href="/friends" className="hover-underline">Friends</Nav.Link>
                     </Nav>
                     <Nav className="text-center">
                         {user ? (

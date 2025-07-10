@@ -5,6 +5,8 @@ import io, { Socket } from 'socket.io-client';
 import { ChatService } from '../Services/chat.service';
 import { useAuth } from '../Context/auth.context';
 
+import '../styles/chatroom.css'; // Import your custom styles
+
 // Types aligned with your models
 interface User {
     _id: string;
@@ -442,16 +444,17 @@ const ChatRoomPage: React.FC = () => {
     }
 
     return (
-        <Container fluid className="h-screen bg-gray-100">
+        <Container fluid className="bg-gray-100 chat-room-container">
             <Row className="h-100">
                 {/* Sidebar */}
                 <Col md={3} className="bg-dark border-end p-0 h-100">
                     <div className="d-flex flex-column h-100">
                         {/* Header */}
-                        <div className="p-3 border-bottom">
+                        <div className="p-3 border-bottom header-section bg-dark text-white">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h5 className="mb-0 text-white">Chat Rooms</h5>
                                 <Button
+                                    className='create-room-button'
                                     variant="outline-light"
                                     size="sm"
                                     onClick={() => setShowCreateRoomModal(true)}
@@ -475,7 +478,7 @@ const ChatRoomPage: React.FC = () => {
                         </div>
 
                         {/* Rooms List */}
-                        <div className="flex-grow-1 overflow-auto">
+                        <div className="flex-grow-1 overflow-auto rooms-list">
                             <ListGroup variant="flush">
                                 {filteredRooms.map(room => (
                                     <ListGroup.Item
@@ -488,7 +491,7 @@ const ChatRoomPage: React.FC = () => {
                                         <div className="flex-grow-1">
                                             <div className="d-flex justify-content-between align-items-center">
                                                 <strong className="text-truncate">{room.type !== 'private' ? room.name : room.users![0].username == currentUser?.username ? room.users![1].username : room.users![0].username}</strong>
-                                                <small className="text-muted">
+                                                <small className="text-muted last-activity">
                                                     {room.lastActivity && new Date(room.lastActivity).toLocaleTimeString()}
                                                 </small>
                                             </div>
@@ -548,7 +551,6 @@ const ChatRoomPage: React.FC = () => {
                 </Col>
 
                 {/* Main Chat Area */}
-                {/* Main Chat Area */}
                 <Col md={9} className="p-0 chat-main-column">
                     {currentRoom ? (
                         <>
@@ -566,10 +568,10 @@ const ChatRoomPage: React.FC = () => {
                                     <div className="d-flex gap-2">
                                         {currentRoom.type === 'private' && (
                                             <>
-                                                <Button variant="outline-light" size="sm">
+                                                <Button disabled variant="outline-light" size="sm">
                                                     <Phone size={16} />
                                                 </Button>
-                                                <Button variant="outline-light" size="sm">
+                                                <Button disabled variant="outline-light" size="sm">
                                                     <Video size={16} />
                                                 </Button>
                                             </>
@@ -579,8 +581,8 @@ const ChatRoomPage: React.FC = () => {
                                                 <MoreVertical size={16} />
                                             </Dropdown.Toggle>
                                             <Dropdown.Menu>
-                                                <Dropdown.Item>Room Settings</Dropdown.Item>
-                                                <Dropdown.Item>View Members</Dropdown.Item>
+                                                <Dropdown.Item disabled>Room Settings</Dropdown.Item>
+                                                <Dropdown.Item disabled>View Members</Dropdown.Item>
                                                 <Dropdown.Item onClick={() => {
                                                     const query = prompt('Search messages:');
                                                     if (query) {
@@ -591,7 +593,7 @@ const ChatRoomPage: React.FC = () => {
                                                     Search Messages
                                                 </Dropdown.Item>
                                                 <Dropdown.Divider />
-                                                <Dropdown.Item className="text-danger">Leave Room</Dropdown.Item>
+                                                <Dropdown.Item disabled className="text-danger">Leave Room</Dropdown.Item>
                                             </Dropdown.Menu>
                                         </Dropdown>
                                     </div>
@@ -608,13 +610,13 @@ const ChatRoomPage: React.FC = () => {
                                     </div>
                                 )}
 
-                                <div className="space-y-4 overflow-auto p-3" style={{ height: 'calc(100vh - 210px)' }}>
+                                <div className="space-y-4 overflow-auto p-3" style={{ height: 'calc(100vh - 210px - 60px)' }}>
                                     {messages.map(message => (
                                         <div
                                             key={message._id}
-                                            className={`d-flex message-box ${message.user_id._id == currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
+                                            className={`d-flex ${message.user_id._id == currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
                                         >
-                                            <div className={`max-w-75 ${message.user_id._id === currentUser?._id ? 'bg-primary text-white' : 'bg-dark border'} p-3 rounded-lg shadow-sm rounded mt-1`} style={{ minWidth: '200px' }}>
+                                            <div className={`max-w-75 message-box ${message.user_id._id === currentUser?._id ? 'bg-success text-white' : 'bg-dark border'} p-3 rounded-lg shadow-sm rounded mt-1`} style={{ minWidth: '200px' }}>
                                                 {message.sender?._id !== currentUser?._id && (
                                                     <small className="text-muted d-block">
                                                         {getSenderDisplayName(message)}
@@ -647,8 +649,8 @@ const ChatRoomPage: React.FC = () => {
                             <div className="chat-input-section p-3">
                                 <Form onSubmit={handleSendMessage}>
                                     <InputGroup>
-                                        <Button variant="outline-secondary">
-                                            <Paperclip size={16} />
+                                        <Button disabled variant="outline-secondary">
+                                            <Paperclip  size={16} />
                                         </Button>
                                         <Form.Control
                                             type="text"
@@ -656,11 +658,11 @@ const ChatRoomPage: React.FC = () => {
                                             value={newMessage}
                                             onChange={(e) => handleTyping(e.target.value)}
                                         />
-                                        <Button variant="outline-secondary">
-                                            <Smile size={16} />
+                                        <Button disabled variant="outline-secondary">
+                                            <Smile size={20} />
                                         </Button>
-                                        <Button type="submit" variant="primary">
-                                            <Send size={16} />
+                                        <Button type="submit" variant="primary" className='send-button'>
+                                            <Send size={20} />
                                         </Button>
                                     </InputGroup>
                                 </Form>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Card, Form, Alert, Spinner } from 'react-bootstrap';
+import { Button, Card, Form, Alert, Spinner, Container, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { timeSince } from '../Static/date.methods';
 import { IPostData } from '../Network/post.api';
@@ -65,7 +65,7 @@ export function PostPage() {
             }
 
             const newCommentData = await response.json();
-            
+
             // Add the new comment to the comments list
             setComments(prev => [...(prev || []), newCommentData]);
             setNewComment('');
@@ -185,6 +185,23 @@ export function PostPage() {
                     </Card>
                 </div>
             </div>
+            <footer className="py-4 mt-5 border-top border-success border-opacity-25">
+                <Container>
+                    <Row className="align-items-center">
+                        <Col md={8} className="text-center text-md-start">
+                            <p className="text-light mb-2">
+                                <span className="text-success fw-semibold">Created by Ruslan Kildibekov</span>
+                            </p>
+                            <p className="text-light opacity-75 mb-0 small">
+                                Built with React, TypeScript, React-Bootstrap, and Tailwind CSS.
+                                <span className="text-danger ms-2">♥</span> Made with passion for web development.
+                            </p>
+                        </Col>
+                        <Col md={4} className="text-center text-md-end">
+                        </Col>
+                    </Row>
+                </Container>
+            </footer>
         </div>
     );
 }

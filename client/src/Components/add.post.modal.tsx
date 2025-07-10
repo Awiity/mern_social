@@ -129,10 +129,10 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
                     <p className='mb-3'>{resMsg}</p></Alert></>}
             </Modal.Body>
             <Modal.Footer className='d-flex justify-content-between'>
-                <Button variant='success' type='submit' form='post-form' disabled={loading}><Spinner size='sm' hidden={!loading } ></Spinner>
+                <Button variant='success' type='submit' form='post-form' disabled={loading} className='submit-button'><Spinner size='sm' hidden={!loading } ></Spinner>
                     <img src={check_svg} width="25px" /> Submit
                 </Button>
-                <Button variant='danger' onClick={onClose}>
+                <Button variant='danger' onClick={onClose} className='cancel-button'>
                     <img src={close_svg} width="25px" /> Cancel</Button>
             </Modal.Footer>
         </Modal>
