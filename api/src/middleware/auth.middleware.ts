@@ -54,7 +54,7 @@ export const authenticate = async (
             httpOnly: true,
             //secure: process.env.NODE_ENV === 'production',
             maxAge: 15 * 60 * 1000,
-            sameSite: 'strict'
+            sameSite: 'none'
         });
         
         req.userId = user._id;

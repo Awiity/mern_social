@@ -27,13 +27,13 @@ export const AuthController = {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 maxAge: 15 * 60 * 1000,                         // 15min
-                sameSite: 'strict'
+                sameSite: 'none'
             });
             res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 maxAge: 1 * 24 * 60 * 60 * 1000,                         // 24 hours / 1 day
-                sameSite: 'strict'
+                sameSite: 'none'
             });
 
             await user.save();
@@ -92,13 +92,13 @@ export const AuthController = {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 15 * 60 * 1000,
-                sameSite: 'strict'
+                sameSite: 'none'
             });
             res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 24 * 60 * 60 * 1000,
-                sameSite: 'strict'
+                sameSite: 'none'
             })
             res.status(200).json("token refreshed successfully");
             console.log("refreshed token");
