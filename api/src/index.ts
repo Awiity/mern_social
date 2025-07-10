@@ -273,7 +273,7 @@ app.use('/api', commentRoutes)
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack, req.cookies);
+    console.error("cook", req.cookies);
     res.status(500).json({ message: "Internal Server Error!!!" });
 });
 
