@@ -29,14 +29,14 @@ export const AuthController = {
                 secure: process.env.NODE_ENV == "production" ? true : true,
                 maxAge: 15 * 60 * 1000,                         // 15min
                 sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
-                domain: process.env.NODE_ENV === "production" ? "opal-social-mocha.vercel.app" : undefined
+                domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
             });
             res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV == "production" ? true : true,
                 maxAge: 1 * 24 * 60 * 60 * 1000,                         // 24 hours / 1 day
                 sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
-                domain: process.env.NODE_ENV === "production" ? "opal-social-mocha.vercel.app" : undefined
+                domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
 
             });
 
