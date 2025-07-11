@@ -268,6 +268,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
+app.set('trust proxy', true);
 app.use(express.json());
 app.use(limiter);
 app.use(cookieParser());
