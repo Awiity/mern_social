@@ -3,9 +3,6 @@ import { UserModel, userSchema } from "../models/user.model";
 import { ApiError } from "../utils/apiError";
 import { generateTokens } from "../utils/jwt";
 import bcrypt, { genSalt } from "bcrypt";
-import jwt from "jsonwebtoken";
-import config from "../config/config";
-
 interface RequestM extends Request {
     userId: string
 }
@@ -13,7 +10,7 @@ const SALT_FACTOR: number = 12;
 
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Only secure in production
+    secure: process.env.NODE_ENV == 'production' ? true : false, // Only secure in production
     sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
     domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
     path: '/', // Explicitly set path
@@ -24,13 +21,13 @@ export const AuthController = {
         try {
             const { email, password } = req.body;
             if (!email || !password) throw new ApiError(400, 'Email and password required');
-            console.log("login called with email: ", email);
             const user = await UserModel.findOne({ email }).select('+password');
             if (!user) throw new ApiError(401, "Invalid credentials");
             const isValid = await user.comparePassword(password);
             if (!isValid) throw new ApiError(401, "Invalid credentials");
             const { accessToken, refreshToken } = generateTokens(user);
             user.refreshToken = refreshToken;
+            console.log("login called with email: ", email, "Funny tokens: ", accessToken.slice(-5), refreshToken.slice(-5));
             res.cookie("accessToken", accessToken, {
                 ...cookieOptions,
                 maxAge: 15 * 60 * 1000,
