@@ -11,6 +11,14 @@ interface RequestM extends Request {
 }
 const SALT_FACTOR: number = 12;
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Only secure in production
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+    domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+    path: '/', // Explicitly set path
+};
+
 export const AuthController = {
     async login(req: Request, res: Response) {
         try {
@@ -24,18 +32,13 @@ export const AuthController = {
             const { accessToken, refreshToken } = generateTokens(user);
             user.refreshToken = refreshToken;
             res.cookie("accessToken", accessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV == "production" ? true : true,
-                maxAge: 15 * 60 * 1000,                         // 15min
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
-                domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
+                ...cookieOptions,
+                maxAge: 15 * 60 * 1000,
             });
             res.cookie("refreshToken", refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV == "production" ? true : true,
+                ...cookieOptions,
                 maxAge: 1 * 24 * 60 * 60 * 1000,                         // 24 hours / 1 day
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
-                domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
+
 
             });
 
@@ -92,19 +95,15 @@ export const AuthController = {
             await user.save();
 
             res.cookie('accessToken', newAccessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV == "production" ? true : true,
+                ...cookieOptions,
                 maxAge: 15 * 60 * 1000,
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
-                domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
+
 
             });
             res.cookie('refreshToken', newRefreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV == "production" ? true : true,
+                ...cookieOptions,
                 maxAge: 24 * 60 * 60 * 1000,
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
-                domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
+
 
             })
             res.status(200).json("token refreshed successfully");
@@ -120,9 +119,21 @@ export const AuthController = {
             const userId = req.userId;
             await UserModel.findOneAndUpdate({ _id: userId }, { refreshToken: null });
 
-            res.clearCookie('accessToken');
-            res.clearCookie('refreshToken');
-            res.status(204).send()
+            res.clearCookie('accessToken', {
+                domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+                path: '/',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                secure: process.env.NODE_ENV === 'production'
+            });
+
+            res.clearCookie('refreshToken', {
+                domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+                path: '/',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                secure: process.env.NODE_ENV === 'production'
+            });
+
+            res.status(204).send();
         } catch (error) {
             ApiError.handle(error, res);
         }

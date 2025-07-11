@@ -13,6 +13,13 @@ declare global {
         }
     }
 }
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Only secure in production
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+    domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+    path: '/', // Explicitly set path
+};
 
 export const authenticate = async (
     req: Request,
@@ -53,13 +60,11 @@ export const authenticate = async (
         const { accessToken: newAccessToken } = generateTokens(user);
 
         res.cookie("accessToken", newAccessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV == 'production' ? true : true,
+            ...cookieOptions,
             maxAge: 15 * 60 * 1000,
-            sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
-            domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
+
         });
-        
+
         req.userId = user._id;
         next();
     } catch (error) {

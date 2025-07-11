@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     async function login(credentials: ILoginCred) {
-        const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
+        const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials, {withCredentials: true});
         if (response.statusText !== "OK") return response
         setUser(response.data.user);
         console.log("login successfull");

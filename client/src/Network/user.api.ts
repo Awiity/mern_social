@@ -20,7 +20,8 @@ export interface IRegisterCred {
 }
 axios.defaults.withCredentials = true;
 export async function register(credentials: IRegisterCred) {
-    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, credentials)
+    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, credentials, { withCredentials: true });
+    if (response.statusText !== "OK") return response;
     //if (response.statusText !== "OK") return response
     //localStorage.setItem('auth', response.data);
     return response;
