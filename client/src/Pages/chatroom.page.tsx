@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Button, Form, Modal, ListGroup, Badge, InputGroup, Dropdown } from 'react-bootstrap';
 import { Send, Users, Plus, Search, Phone, Video, MoreVertical, Smile, Paperclip } from 'lucide-react';
-import io, { Socket } from 'socket.io-client';
 import { ChatService } from '../Services/chat.service';
 import { useAuth } from '../Context/auth.context';
 
@@ -77,18 +76,18 @@ const ChatRoomPage: React.FC = () => {
     const chatService = new ChatService();
 
     // State
-    const [socket, setSocket] = useState<Socket | null>(null);
+    //const [socket, setSocket] = useState<Socket | null>(null);
     const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const [onlineUsers, setOnlineUsers] = useState<RoomUser[]>([]);
+    //const [onlineUsers, setOnlineUsers] = useState<RoomUser[]>([]);
     const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
     const [showUserListModal, setShowUserListModal] = useState(false);
     const [newRoomName, setNewRoomName] = useState('');
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [isTyping, setIsTyping] = useState(false);
-    const [typingUsers, setTypingUsers] = useState<string[]>([]);
+    //const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [roomType, setRoomType] = useState<'group' | 'private'>('group');
@@ -531,7 +530,7 @@ const ChatRoomPage: React.FC = () => {
                                 </Button>
                             </div>
                             <div className="d-flex flex-wrap gap-1">
-                                {onlineUsers.slice(0, 5).map(user => (
+                                {/*onlineUsers.slice(0, 5).map(user => (
                                     <Badge
                                         key={user.id}
                                         bg="success"
@@ -544,12 +543,12 @@ const ChatRoomPage: React.FC = () => {
                                     >
                                         {user.username}
                                     </Badge>
-                                ))}
-                                {onlineUsers.length > 5 && (
+                                ))*/}
+                                {/*onlineUsers.length > 5 && (
                                     <Badge bg="secondary" pill>
                                         +{onlineUsers.length - 5}
                                     </Badge>
-                                )}
+                                )*/}
                             </div>
                         </div>
                     </div>
@@ -636,7 +635,7 @@ const ChatRoomPage: React.FC = () => {
                                     ))}
 
                                     {/* Typing indicator */}
-                                    {typingUsers.length > 0 && (
+                                    {/*typingUsers.length > 0 && (
                                         <div className="d-flex justify-content-start">
                                             <div className="bg-dark p-2 rounded-lg shadow-sm">
                                                 <small className="text-muted">
@@ -644,7 +643,7 @@ const ChatRoomPage: React.FC = () => {
                                                 </small>
                                             </div>
                                         </div>
-                                    )}
+                                    )*/}
 
                                     <div ref={messagesEndRef} />
                                 </div>
