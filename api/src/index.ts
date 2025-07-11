@@ -53,7 +53,7 @@ const io = new Server<
 const roomManager = new RoomManager();
 
 // Socket.io connection
-io.on('connection', (socket) => {
+/* io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
     // Join a chat room
@@ -242,11 +242,12 @@ io.on('connection', (socket) => {
     });
 });
 
+
 // Error handling for Socket.IO engine
 io.engine.on("connection_error", (err) => {
     console.log('Connection error:', err.req, err.code, err.message, err.context);
 });
-
+*/
 // Middleware
 app.use(cors({
     credentials: true,
