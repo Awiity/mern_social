@@ -4,8 +4,8 @@ import { ILoginCred } from "../Network/user.api";
 axios.defaults.withCredentials = true;
 
 const API_BASE_URL = process.env.NODE_ENV === 'production'
-    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
-    : process.env.DEV_API_URL || 'http://localhost:4000';
+    ? 'https://opalsocialbe.vercel.app'
+    : 'http://localhost:4000';
 
 type User = {
     _id: string;
@@ -44,13 +44,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         checkAuth();
     }, []);
 
-    async function login(credentials: ILoginCred) {
-        const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials, {withCredentials: true});
-        if (response.statusText !== "OK") return response
-        setUser(response.data.user);
-        console.log("login successfull");
+async function login(credentials: ILoginCred) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.status === 200) {
+            setUser(response.data.user);
+            console.log("login successful");
+        }
         return response;
+    } catch (error) {
+        console.error("Login error:", error);
+        throw error;
     }
+}
 
     async function logout() {
         try {

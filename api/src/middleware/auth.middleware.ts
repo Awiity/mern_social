@@ -15,10 +15,10 @@ declare global {
 }
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV == 'production' ? true : false, // Only secure in production
+    secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
     domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
-    path: '/', // Explicitly set path
+    path: '/',
 };
 
 export const authenticate = async (
@@ -28,10 +28,13 @@ export const authenticate = async (
 ) => {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
-    // log last 5 values of accessToken and refreshToken
+
     console.log("Access Token:", accessToken && accessToken.slice(-5));
     console.log("Refresh Token:", refreshToken && refreshToken.slice(-5));
-    if (!accessToken && !refreshToken) throw new ApiError(401, "Unauthorized (No tokens provided)");
+
+    if (!accessToken && !refreshToken) {
+        throw new ApiError(401, "Unauthorized (No tokens provided)");
+    }
 
     try {
         if (accessToken) {
@@ -44,32 +47,32 @@ export const authenticate = async (
         if (!(error instanceof jwt.TokenExpiredError)) {
             throw new ApiError(401, "Invalid accessToken");
         }
-
     }
+
     if (!refreshToken) {
         throw new ApiError(401, "Session expired - No refresh token");
     }
+
     try {
         const decodedRefresh = jwt.verify(refreshToken, config.jwt_refresh_secret) as jwt.JwtPayload;
         const user = await UserModel.findById(decodedRefresh.userId).select('+refreshToken +_id +role').exec();
 
         if (!user || user.refreshToken !== refreshToken) {
-            res.clearCookie('refreshToken');
-            throw new ApiError(401, "Invalid refresh token XDDDDD");
+            res.clearCookie('refreshToken', cookieOptions);
+            throw new ApiError(401, "Invalid refresh token");
         }
+
         const { accessToken: newAccessToken } = generateTokens(user);
 
         res.cookie("accessToken", newAccessToken, {
             ...cookieOptions,
             maxAge: 15 * 60 * 1000,
-
         });
 
         req.userId = user._id;
+        req.role = user.role; // FIX: Set role from user object
         next();
     } catch (error) {
-        //res.clearCookie("accessToken");
-        //res.clearCookie("refreshToken");
         throw new ApiError(401, "Unauthorized (something went wrong)");
     }
 }

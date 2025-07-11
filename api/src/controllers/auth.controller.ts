@@ -10,10 +10,10 @@ const SALT_FACTOR: number = 12;
 
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV == 'production' ? true : false, // Only secure in production
+    secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
     domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
-    path: '/', // Explicitly set path
+    path: '/',
 };
 
 export const AuthController = {
@@ -25,21 +25,24 @@ export const AuthController = {
             if (!user) throw new ApiError(401, "Invalid credentials");
             const isValid = await user.comparePassword(password);
             if (!isValid) throw new ApiError(401, "Invalid credentials");
+
             const { accessToken, refreshToken } = generateTokens(user);
+
+            // IMPORTANT: Save refresh token to database before setting cookies
             user.refreshToken = refreshToken;
+            await user.save(); // This was missing - save BEFORE setting cookies
+
             console.log("login called with email: ", email, "Funny tokens: ", accessToken.slice(-5), refreshToken.slice(-5));
+
             res.cookie("accessToken", accessToken, {
                 ...cookieOptions,
                 maxAge: 15 * 60 * 1000,
             });
             res.cookie("refreshToken", refreshToken, {
                 ...cookieOptions,
-                maxAge: 1 * 24 * 60 * 60 * 1000,                         // 24 hours / 1 day
-
-
+                maxAge: 1 * 24 * 60 * 60 * 1000,
             });
 
-            await user.save();
             req.userId = user.id;
             res.json({
                 user: {
@@ -51,7 +54,7 @@ export const AuthController = {
             })
         } catch (error) {
             ApiError.handle(error, res);
-        };
+        }
     },
 
     async register(req: Request, res: Response) {
