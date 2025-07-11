@@ -104,3 +104,18 @@
         font-size: 1.5rem !important;
     }
 }
+.login-card {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .login-card {
+    width: 75%;
+  }
+}
+
+@media (min-width: 992px) {
+  .login-card {
+    width: 35%;
+  }
+}

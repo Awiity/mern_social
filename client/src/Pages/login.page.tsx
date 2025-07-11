@@ -50,7 +50,7 @@ const LoginPage: React.FC = () => {
 
     return (
         <div className="login-container">
-            <Container fluid className=" d-flex align-items-center justify-content-center">
+            <Container fluid className=" d-flex align-items-center justify-content-center" >
                 <Row className="w-100">
                     <Col xs={12} sm={8} md={6} lg={4} xl={3} className="mx-auto w-100 d-flex align-items-center justify-content-center">
                         <Card className="login-card shadow-lg border-0">
