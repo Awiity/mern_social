@@ -55,7 +55,7 @@ async function login(credentials: ILoginCred) {
         
         if (response.status === 200) {
             setUser(response.data.user);
-            console.log("login successful");
+            console.log("login successful", response);
         }
         return response;
     } catch (error) {
