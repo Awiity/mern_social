@@ -17,7 +17,6 @@ export const AuthController = {
             const { email, password } = req.body;
             if (!email || !password) throw new ApiError(400, 'Email and password required');
             console.log("login called with email: ", email);
-
             const user = await UserModel.findOne({ email }).select('+password');
             if (!user) throw new ApiError(401, "Invalid credentials");
             const isValid = await user.comparePassword(password);

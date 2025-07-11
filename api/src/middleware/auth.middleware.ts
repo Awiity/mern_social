@@ -54,9 +54,10 @@ export const authenticate = async (
 
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
-            //secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV == 'production' ? true : true,
             maxAge: 15 * 60 * 1000,
-            sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax'
+            sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
+            domain: process.env.NODE_ENV === "production" ? ".opal-social-mocha.vercel.app" : undefined
         });
         
         req.userId = user._id;
