@@ -1,5 +1,7 @@
 # Small social-media-like web application
 
+https://opal-social-mocha.vercel.app/news
+
 ## Tech Stack
 
 - **MongoDB** (with Mongoose)
