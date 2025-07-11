@@ -28,6 +28,7 @@
 ---
 ![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/home-page.png?raw=true)
 ![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/chat-page.png?raw=true)
+![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/news-page.png?raw=true)
 ![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/login-page.png?raw=true)
 ![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/post.png?raw=true)
 
