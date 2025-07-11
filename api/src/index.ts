@@ -259,7 +259,8 @@ app.use(cors({
         config.client_url || 'https://opal-social-mocha.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie'] // Important for Safari
 }));
 app.use(express.json());
 app.use(cookieParser());

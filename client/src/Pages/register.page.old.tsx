@@ -39,6 +39,8 @@ export function RegisterPageOLD() {
                 <Form.Group className="mb-3">
                     <Form.Label>Username</Form.Label>
                     <Form.Control
+                        minLength={3}
+                        maxLength={20}
                         id="username"
                         placeholder="Your pseudoname..."
                         value={user.username || ""}
@@ -115,7 +117,7 @@ export function RegisterPageOLD() {
                     <Form.Control
                         type="file"
                     >
-                        
+
                     </Form.Control>
                     <Form.Text className="text-muted">Optional</Form.Text>
                 </Form.Group>

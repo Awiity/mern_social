@@ -16,6 +16,7 @@ export const AuthController = {
         try {
             const { email, password } = req.body;
             if (!email || !password) throw new ApiError(400, 'Email and password required');
+            console.log("login called with email: ", email);
 
             const user = await UserModel.findOne({ email }).select('+password');
             if (!user) throw new ApiError(401, "Invalid credentials");
@@ -25,15 +26,18 @@ export const AuthController = {
             user.refreshToken = refreshToken;
             res.cookie("accessToken", accessToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
+                secure: process.env.NODE_ENV == "production" ? true : true,
                 maxAge: 15 * 60 * 1000,                         // 15min
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax'
+                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
+                domain: process.env.NODE_ENV === "production" ? config.client_url : undefined
             });
             res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
+                secure: process.env.NODE_ENV == "production" ? true : true,
                 maxAge: 1 * 24 * 60 * 60 * 1000,                         // 24 hours / 1 day
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax'
+                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
+                domain: process.env.NODE_ENV === "production" ? config.client_url : undefined
+
             });
 
             await user.save();
@@ -90,15 +94,19 @@ export const AuthController = {
 
             res.cookie('accessToken', newAccessToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: process.env.NODE_ENV == "production" ? true : true,
                 maxAge: 15 * 60 * 1000,
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax'
+                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
+                domain: process.env.NODE_ENV === "production" ? config.client_url : undefined
+
             });
             res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: process.env.NODE_ENV == "production" ? true : true,
                 maxAge: 24 * 60 * 60 * 1000,
-                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax'
+                sameSite: process.env.NODE_ENV == "production" ? 'none' : 'lax',
+                domain: process.env.NODE_ENV === "production" ? config.client_url : undefined
+
             })
             res.status(200).json("token refreshed successfully");
             console.log("refreshed token");
