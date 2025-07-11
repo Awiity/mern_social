@@ -26,13 +26,21 @@ export const authenticate = async (
     res: Response,
     next: NextFunction
 ) => {
+    console.log("=== AUTHENTICATE MIDDLEWARE ===");
+    console.log("Request URL:", req.url);
+    console.log("Request method:", req.method);
+    console.log("Request headers:", req.headers);
+    console.log("Raw cookies:", req.headers.cookie);
+
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
 
-    console.log("Access Token:", accessToken && accessToken.slice(-5));
-    console.log("Refresh Token:", refreshToken && refreshToken.slice(-5));
+    console.log("Parsed cookies:", req.cookies);
+    console.log("Access Token:", accessToken ? `${accessToken.slice(0, 10)}...${accessToken.slice(-5)}` : 'NOT FOUND');
+    console.log("Refresh Token:", refreshToken ? `${refreshToken.slice(0, 10)}...${refreshToken.slice(-5)}` : 'NOT FOUND');
 
     if (!accessToken && !refreshToken) {
+        console.log("No tokens found, throwing 401");
         throw new ApiError(401, "Unauthorized (No tokens provided)");
     }
 
@@ -47,6 +55,7 @@ export const authenticate = async (
         if (!(error instanceof jwt.TokenExpiredError)) {
             throw new ApiError(401, "Invalid accessToken");
         }
+        console.error(error)
     }
 
     if (!refreshToken) {

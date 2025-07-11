@@ -31,12 +31,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/auth/me`, { withCredentials: true });
-                //console.log( response);
+                console.log("=== CHECKING AUTH ===");
+                console.log("API URL:", API_BASE_URL);
+                console.log("Document cookies:", document.cookie);
+
+                const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
+                    withCredentials: true
+                });
+                console.log("Auth check response:", response.data);
                 setUser(response.data);
             } catch (error) {
-                console.log("authme/ error");
-                console.error(error);
+                console.log("Auth check failed:", error);
+                console.log("Document cookies after error:", document.cookie);
             } finally {
                 setLoading(false);
             }
@@ -44,25 +50,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         checkAuth();
     }, []);
 
-async function login(credentials: ILoginCred) {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'application/json',
+    async function login(credentials: ILoginCred) {
+        try {
+            console.log("=== LOGIN ATTEMPT ===");
+            console.log("Credentials:", credentials);
+            console.log("API URL:", API_BASE_URL);
+
+            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            console.log("Login response:", response);
+            console.log("Response headers:", response.headers);
+            console.log("Document cookies after login:", document.cookie);
+
+            if (response.status === 200) {
+                setUser(response.data.user);
+                console.log("Login successful, user set:", response.data.user);
             }
-        });
-        
-        if (response.status === 200) {
-            setUser(response.data.user);
-            console.log("login successful", response);
+            return response;
+        } catch (error) {
+            console.error("Login error:", error);
+            throw error;
         }
-        return response;
-    } catch (error) {
-        console.error("Login error:", error);
-        throw error;
     }
-}
 
     async function logout() {
         try {

@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
             const response = await login(formData);
             if (response.status === 200) {
                 setShowAlert(true);
-                setTimeout(() => { navigate('/news'); setShowAlert(false); }, 2000);
+                setTimeout(() => { navigate('/'); setShowAlert(false); }, 2000);
 
             } else {
                 console.error('Login failed:', response.statusText);

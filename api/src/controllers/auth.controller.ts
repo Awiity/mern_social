@@ -28,20 +28,26 @@ export const AuthController = {
 
             const { accessToken, refreshToken } = generateTokens(user);
 
-            // IMPORTANT: Save refresh token to database before setting cookies
             user.refreshToken = refreshToken;
-            await user.save(); // This was missing - save BEFORE setting cookies
+            await user.save();
 
-            console.log("login called with email: ", email, "Funny tokens: ", accessToken.slice(-5), refreshToken.slice(-5));
+            console.log("=== LOGIN DEBUG INFO ===");
+            console.log("Environment:", process.env.NODE_ENV);
+            console.log("Cookie options:", cookieOptions);
+            console.log("Setting cookies...");
 
             res.cookie("accessToken", accessToken, {
                 ...cookieOptions,
                 maxAge: 15 * 60 * 1000,
             });
+
             res.cookie("refreshToken", refreshToken, {
                 ...cookieOptions,
                 maxAge: 1 * 24 * 60 * 60 * 1000,
             });
+
+            console.log("Cookies set successfully");
+            console.log("Response headers:", res.getHeaders());
 
             req.userId = user.id;
             res.json({
