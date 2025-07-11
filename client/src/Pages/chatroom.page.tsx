@@ -107,7 +107,7 @@ const ChatRoomPage: React.FC = () => {
     // Initialize socket connection
     useEffect(() => {
         loadAllUsers();
-        if (isAuthenticated && currentUser) {
+        /*if (isAuthenticated && currentUser) {
             // Connect to your backend socket server
             const newSocket = io(`${API_BASE_URL}`);
             setSocket(newSocket);
@@ -177,7 +177,7 @@ const ChatRoomPage: React.FC = () => {
             return () => {
                 newSocket.disconnect();
             };
-        }
+        }*/
     }, [isAuthenticated, currentUser]);
 
     // Load user's rooms
@@ -236,19 +236,20 @@ const ChatRoomPage: React.FC = () => {
 
     // Handle room change
     const handleRoomChange = async (room: Room) => {
-        if (socket && currentUser) {
+        // TOFIX: Commented out socket join/leave logic as Vercel does not support WebSockets
+        if (currentUser) {
             // Leave current room if any
             if (currentRoom) {
                 console.log('Leaving room:', currentRoom.name);
-                socket.emit('leave-room', currentRoom.name);
+                //socket.emit('leave-room', currentRoom.name);
             }
 
             // Join new room - using room name as per your backend
             console.log('Joining room:', room.name);
-            socket.emit('join-room', {
+            /*socket.emit('join-room', {
                 roomName: room.name,
                 username: currentUser.username
-            });
+            });*/
 
             setCurrentRoom(room);
             await loadMessages(room._id);
@@ -258,16 +259,18 @@ const ChatRoomPage: React.FC = () => {
     // Handle message send
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newMessage.trim() && currentUser && currentRoom && socket) {
+        // TOFIX: Commented out socket logic as Vercel does not support WebSockets
+
+        if (newMessage.trim() && currentUser && currentRoom /* && socket*/) {
             try {
                 // Send message via socket (real-time)
-                socket.emit('send-message', {
+                /*socket.emit('send-message', {
                     roomName: currentRoom.name,
                     message: newMessage.trim(),
                     user_id: currentUser._id,
                     user_socket_id: socket.id,
                     username: currentUser.username
-                });
+                });*/
 
                 // Also save to database via API
                 const messageData = {
@@ -287,16 +290,18 @@ const ChatRoomPage: React.FC = () => {
     };
 
     // Handle typing
+    // TOFIX: Commented out socket logic as Vercel does not support WebSockets
+
     const handleTyping = (value: string) => {
         setNewMessage(value);
 
-        if (socket && currentUser && currentRoom) {
+        if (/*socket &&*/ currentUser && currentRoom) {
             if (!isTyping && value.trim()) {
                 setIsTyping(true);
-                socket.emit('typing', {
+                /*socket.emit('typing', {
                     roomName: currentRoom.name,
                     username: currentUser.username
-                });
+                });*/
             }
 
             if (typingTimeoutRef.current) {
@@ -305,10 +310,10 @@ const ChatRoomPage: React.FC = () => {
 
             typingTimeoutRef.current = setTimeout(() => {
                 setIsTyping(false);
-                socket.emit('stop-typing', {
+                /*socket.emit('stop-typing', {
                     roomName: currentRoom.name,
                     username: currentUser.username
-                });
+                });*/
             }, 1000);
         }
     };
@@ -650,7 +655,7 @@ const ChatRoomPage: React.FC = () => {
                                 <Form onSubmit={handleSendMessage}>
                                     <InputGroup>
                                         <Button disabled variant="outline-secondary">
-                                            <Paperclip  size={16} />
+                                            <Paperclip size={16} />
                                         </Button>
                                         <Form.Control
                                             type="text"
