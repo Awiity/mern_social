@@ -26,11 +26,10 @@
 - Modern UI with React-Bootstrap
 
 ---
-
-![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/login-page.png?raw=true)
-![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/register-page.png?raw=true)
-![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/add-modal.png?raw=true)
+![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/home-page.png?raw=true)
 ![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/chat-page.png?raw=true)
+![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/login-page.png?raw=true)
+![alt text](https://github.com/Awiity/mern_social/blob/main/readme_img/post.png?raw=true)
 
 ## Project Structure
 

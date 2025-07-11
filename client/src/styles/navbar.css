@@ -27,3 +27,27 @@
     backdrop-filter: blur(10px);
     border-radius: 0 0 100px 100px;
 }
+
+.logout-button {
+    background: linear-gradient(135deg, #dc3545 0%, #fd3714 100%);
+}
+.logout-button:hover {
+    background: linear-gradient(135deg, #c82333 0%, #e74c3c 100%);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+}
+
+.login-nb-button {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+.login-nb-button:hover {
+    background: linear-gradient(135deg, #0069d9 0%, #004085 100%) !important;
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3) !important;
+}
+
+.register-nb-button {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%) !important;
+}
+.register-nb-button:hover {
+    background: linear-gradient(135deg, #218838 0%, #1abc9c 100%) !important;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3) !important;
+}

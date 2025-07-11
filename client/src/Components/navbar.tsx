@@ -34,13 +34,13 @@ const NavbarC = () => {
                         {user ? (
                             <>
                                 <NavbarText style={{color: "#90EE91"}}>{user.username}</NavbarText>
-                                <Button variant="danger" className="ms-3" onClick={handleLogout}>
+                                <Button variant="danger" className="ms-3 logout-button" onClick={handleLogout}>
                                     <img src={logout_svg} alt="logout" width="23px" /> Logout
                                     </Button>
                             </>) : (
                             <>
-                                <Button variant="primary" href="/login" className="ms-3">Log-In</Button>
-                                <Button variant="secondary" href="/register" className="ms-3">Register</Button></>
+                                <Button variant="primary" href="/login" className="ms-3 login-nb-button">Log-In</Button>
+                                <Button variant="secondary" href="/register" className="ms-3 register-nb-button">Register</Button></>
 
                         )}
                     </Nav>
