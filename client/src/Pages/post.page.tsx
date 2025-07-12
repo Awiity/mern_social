@@ -28,6 +28,8 @@ export function PostPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
+    const { isAuthenticated } = useAuth(); // Assuming you have a useAuth hook for authentication
+
     // Fetch post data
     const { data: post, isLoading: postLoading, error: postError } = useFetch<IPostData>(
         `${API_BASE_URL}/api/posts/${id}`
@@ -103,6 +105,12 @@ export function PostPage() {
                     <Post post={post}></Post>
 
                     {/* Comment Form */}
+                    {!isAuthenticated && (
+                        <Alert variant="warning" className="mt-4">
+                            You need to <a href="/login" className="alert-link">sign in</a> to comment on this post.
+                        </Alert>
+                    )}
+
                     {currentUser && (
                         <Card className="comment-form-card mb-4">
                             <Card.Body>
@@ -117,6 +125,7 @@ export function PostPage() {
                                             placeholder="Write your comment..."
                                             className="comment-textarea"
                                             disabled={isSubmitting}
+
                                         />
                                     </Form.Group>
                                     {submitError && (

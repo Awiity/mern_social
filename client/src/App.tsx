@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 import LoginPage from './Pages/login.page';
 import { Layout } from './Pages/layout.page';
 import { NotFound } from './Pages/notfound.page';
-import { ProtectedRoute } from './Components/protected.route';
 import { NewsPage } from './Pages/news.page';
 import { RegisterPage } from './Pages/register.page';
 import { UserPage } from './Pages/user.page';
@@ -18,12 +17,12 @@ function App() {
                 <Route path='/' element={<Layout />} >
                     <Route path='login' element={<LoginPage />}></Route>
                     <Route path='' element={<HomePage />}></Route>
-                    <Route path='*' element={<ProtectedRoute><NotFound /></ProtectedRoute>}></Route>
-                    <Route path='news' element={<ProtectedRoute><NewsPage></NewsPage></ProtectedRoute>}></Route>
+                    <Route path='*' element={<NotFound />}></Route>
+                    <Route path='news' element={<NewsPage></NewsPage>}></Route>
                     <Route path='register' element={<RegisterPage />}></Route>
-                    <Route path='user/:id' element={<ProtectedRoute><UserPage></UserPage></ProtectedRoute>}></Route>
-                    <Route path='post/:id' element={<ProtectedRoute><PostPage></PostPage></ProtectedRoute>} ></Route>
-                    <Route path='chatroom' element={<ProtectedRoute><ChatRoomPage></ChatRoomPage></ProtectedRoute>}></Route>
+                    <Route path='user/:id' element={<UserPage></UserPage>}></Route>
+                    <Route path='post/:id' element={<PostPage></PostPage>} ></Route>
+                    <Route path='chatroom' element={<ChatRoomPage></ChatRoomPage>}></Route>
                 </Route>
 
             </Routes>

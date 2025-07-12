@@ -5,6 +5,7 @@ import useFetch from "../Hooks/useFetch";
 import AddPostModal from "../Components/add.post.modal";
 import { Post } from "../Components/post";
 import '../styles/news.css';
+import { useAuth } from "../Context/auth.context";
 
 const API_BASE_URL = process.env.NODE_ENV === 'production'
     ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
@@ -29,6 +30,8 @@ export function NewsPage() {
     const [sortBy, setSortBy] = useState<SortOption>('newest');
     const [filterBy, setFilterBy] = useState<FilterOption>('all');
     const [showFilters, setShowFilters] = useState<boolean>(false);
+
+    const { isAuthenticated } = useAuth(); // Assuming you have a useAuth hook for authentication
 
     // Memoized filtered and sorted posts
     const filteredAndSortedPosts = useMemo(() => {
@@ -115,12 +118,12 @@ export function NewsPage() {
                 <div className="header-title-section mb-3 mb-md-0">
                     <h1 className="news-title mb-2">
                         <TrendingUp className="me-2" size={32} />
-                        Latest Posts
+                        Latest Gems
                     </h1>
                     <div className="d-flex flex-wrap gap-2">
                         <Badge bg="secondary" className="stats-badge">
                             <Users size={14} className="me-1" />
-                            {statistics.total} posts
+                            {statistics.total} gems
                         </Badge>
                         <Badge bg="info" className="stats-badge">
                             <Clock size={14} className="me-1" />
@@ -133,10 +136,12 @@ export function NewsPage() {
                     className="create-post-btn"
                     size="lg"
                     onClick={handleModalOpen}
-                    aria-label="Create new post"
+                    aria-label="Create new gem"
+                    disabled={!isAuthenticated}
+                    title={isAuthenticated ? "Create a new gem" : "Please log in to create a gem"}
                 >
                     <Plus size={20} className="me-2" />
-                    Create Post
+                    Create a Gem
                 </Button>
             </div>
 
@@ -148,11 +153,11 @@ export function NewsPage() {
                             <Search size={20} className="search-icon" />
                             <Form.Control
                                 type="text"
-                                placeholder="Search posts, users, or content..."
+                                placeholder="Search gems, users, or content..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                                 className="search-input"
-                                aria-label="Search posts"
+                                aria-label="Search gems"
                             />
                         </div>
                     </Col>
@@ -194,7 +199,7 @@ export function NewsPage() {
                                         value={sortBy}
                                         onChange={handleSortChange}
                                         className="filter-select"
-                                        aria-label="Sort posts"
+                                        aria-label="Sort gems"
                                     >
                                         <option value="newest">Newest first</option>
                                         <option value="oldest">Oldest first</option>
@@ -209,9 +214,9 @@ export function NewsPage() {
                                         value={filterBy}
                                         onChange={handleFilterChange}
                                         className="filter-select"
-                                        aria-label="Filter posts by content type"
+                                        aria-label="Filter gems by content type"
                                     >
-                                        <option value="all">All posts</option>
+                                        <option value="all">All gems</option>
                                         <option value="with-images">With images</option>
                                         <option value="text-only">Text only</option>
                                     </Form.Select>
@@ -229,7 +234,7 @@ export function NewsPage() {
             return (
                 <div className="loading-container">
                     <Spinner animation="border" variant="success" className="mb-3" />
-                    <p className="loading-text">Loading posts...</p>
+                    <p className="loading-text">Loading gems...</p>
                 </div>
             );
         }
@@ -237,7 +242,7 @@ export function NewsPage() {
         if (error instanceof Error) {
             return (
                 <Alert variant="danger" className="error-alert">
-                    <Alert.Heading>Error Loading Posts</Alert.Heading>
+                    <Alert.Heading>Error Loading Gems</Alert.Heading>
                     <p>{error.message}</p>
                 </Alert>
             );
@@ -247,11 +252,16 @@ export function NewsPage() {
             return (
                 <div className="empty-state">
                     <div className="empty-icon">📝</div>
-                    <h3>No posts yet</h3>
+                    <h3>No gems yet</h3>
                     <p>Be the first to share something with the community!</p>
-                    <Button variant="success" onClick={handleModalOpen} className="mt-3">
+                    <Button
+                        variant="success"
+                        onClick={handleModalOpen}
+                        className="mt-3"
+                        disabled={!isAuthenticated}
+                        title={isAuthenticated ? "Create a new gem" : "Please log in to create a gem"}>
                         <Plus size={20} className="me-2" />
-                        Create First Post
+                        Create First Gem
                     </Button>
                 </div>
             );
@@ -261,7 +271,7 @@ export function NewsPage() {
             return (
                 <div className="empty-state">
                     <div className="empty-icon">🔍</div>
-                    <h3>No posts match your criteria</h3>
+                    <h3>No gems match your criteria</h3>
                     <p>Try adjusting your search terms or filters.</p>
                     <Button variant="outline-secondary" onClick={clearFilters} className="mt-3">
                         Clear Filters
@@ -295,7 +305,7 @@ export function NewsPage() {
                     <Col md={4} className="text-center text-md-end">
                         <div className="footer-stats">
                             <small className="text-muted">
-                                Showing {filteredAndSortedPosts.length} of {statistics.total} posts
+                                Showing {filteredAndSortedPosts.length} of {statistics.total} gems
                             </small>
                         </div>
                     </Col>
