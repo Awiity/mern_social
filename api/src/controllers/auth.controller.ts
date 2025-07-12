@@ -12,7 +12,7 @@ const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
-    domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+    //domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
     path: '/',
 };
 
@@ -126,14 +126,14 @@ export const AuthController = {
             await UserModel.findOneAndUpdate({ _id: userId }, { refreshToken: null });
 
             res.clearCookie('accessToken', {
-                domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+                //domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
                 path: '/',
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                 secure: process.env.NODE_ENV === 'production'
             });
 
             res.clearCookie('refreshToken', {
-                domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+                //domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
                 path: '/',
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                 secure: process.env.NODE_ENV === 'production'

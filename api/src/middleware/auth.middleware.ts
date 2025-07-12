@@ -17,7 +17,7 @@ const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
-    domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
+    //domain: process.env.NODE_ENV === 'production' ? '.opal-social-mocha.vercel.app' : undefined,
     path: '/',
 };
 
