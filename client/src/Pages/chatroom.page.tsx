@@ -75,6 +75,9 @@ const ChatRoomPage: React.FC = () => {
     const { user: currentUser, isAuthenticated } = useAuth();
     const chatService = new ChatService();
 
+    // Temporary solution before integrating with a real-time backend
+    const isVercel: boolean = true;
+
     // State
     //const [socket, setSocket] = useState<Socket | null>(null);
     const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
@@ -652,20 +655,23 @@ const ChatRoomPage: React.FC = () => {
                             {/* Message Input */}
                             <div className="chat-input-section p-3">
                                 <Form onSubmit={handleSendMessage}>
-                                    <InputGroup>
+                                    <InputGroup >
                                         <Button disabled variant="outline-secondary">
                                             <Paperclip size={16} />
                                         </Button>
                                         <Form.Control
                                             type="text"
-                                            placeholder="Type a message..."
+                                            placeholder={isVercel ? 'Real-time features are disabled on Vercel. Please run locally for full functionality.' : 'Type your message...'}
                                             value={newMessage}
                                             onChange={(e) => handleTyping(e.target.value)}
+                                            disabled={isVercel}
+                                            title='Real-time features are disabled on Vercel. Please run locally for full functionality.'
                                         />
                                         <Button disabled variant="outline-secondary">
                                             <Smile size={20} />
                                         </Button>
-                                        <Button type="submit" variant="primary" className='send-button'>
+                                        <Button type="submit" variant="primary" className='send-button' disabled={isVercel}
+                                            title='Real-time features are disabled on Vercel. Please run locally for full functionality.'>
                                             <Send size={20} />
                                         </Button>
                                     </InputGroup>
@@ -677,6 +683,11 @@ const ChatRoomPage: React.FC = () => {
                             <div className="text-center">
                                 <Users size={48} className="mb-3" />
                                 <h5>Select a room to start chatting</h5>
+                                {isVercel && (
+                                    <div className="text-danger mt-2">
+                                        <h4>Note: Real-time features are disabled on Vercel. Please run locally for full functionality.</h4>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

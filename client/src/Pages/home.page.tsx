@@ -1,8 +1,10 @@
 import React from 'react';
 import { Container, Card, Row, Col, Button, Badge } from 'react-bootstrap';
 import '../styles/home.css'; // Assuming you have a CSS file for additional styles
+import { useAuth } from '../Context/auth.context';
 
 const HomePage: React.FC = () => {
+    const {isAuthenticated} = useAuth(); // Assuming you have a useAuth hook for authentication
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#212529' }}>
 
@@ -11,8 +13,8 @@ const HomePage: React.FC = () => {
         <Row className="align-items-center min-vh-75">
           <Col lg={6} className="text-center text-lg-start">
             <div className="mb-4">
-              <Badge bg="success" className="mb-3 px-3 py-2">
-                React • TypeScript • Bootstrap • Tailwind • MongoDB • Express • Node.js
+              <Badge bg="success" className="mb-3 px-3 py-2 overflow-wrap">
+                React • TypeScript • Bootstrap • Tailwind • MongoDB • Node.js
               </Badge>
               <h1 className="display-4 fw-bold text-light mb-3">
                 Welcome to
@@ -24,7 +26,7 @@ const HomePage: React.FC = () => {
                 Built with React-Bootstrap and styled with a sleek dark theme.
               </p>
               <div className="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
-                <Button 
+                {isAuthenticated ? <><Button 
                   variant="success" 
                   size="lg" 
                   href="/chatroom"
@@ -39,7 +41,7 @@ const HomePage: React.FC = () => {
                   className="px-4 py-2 fw-semibold"
                 >
                   View News
-                </Button>
+                </Button></> : <Button className='sign-button' href='/login'>Sign-In</Button>}
               </div>
             </div>
           </Col>
@@ -100,7 +102,7 @@ const HomePage: React.FC = () => {
                 <p className="text-light opacity-75 mb-3">
                   Real-time messaging interface built with modern React patterns and responsive design.
                 </p>
-                <Button variant="outline-success" href="/chatroom" className="fw-semibold">
+                <Button variant="outline-success" href="/chatroom" className="fw-semibold" disabled={!isAuthenticated}>
                   Explore Chatroom →
                 </Button>
               </Card.Body>
@@ -121,9 +123,10 @@ const HomePage: React.FC = () => {
                 <p className="text-light opacity-75 mb-3">
                   Stay updated with the latest news through a clean, organized interface.
                 </p>
-                <Button variant="outline-success" href="/news" className="fw-semibold">
-                  View News →
+                <Button variant="outline-success" href="/news" className="fw-semibold" disabled={!isAuthenticated}>
+                  View News →  
                 </Button>
+                {!isAuthenticated && <span className='text-muted mx-5'>  Authetnication required.</span>}
               </Card.Body>
             </Card>
           </Col>
