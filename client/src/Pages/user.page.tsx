@@ -49,7 +49,7 @@ export function UserPage() {
     const [updateError, setUpdateError] = useState<string | null>(null);
     const [updateSuccess, setUpdateSuccess] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    const { data: posts, setData: setPosts, error: postError, isLoading: postsLoading } = useFetch<IPostData[]>(`${API_BASE_URL}/api/posts/user/${id}`);
+    const { data: posts, error: postError, isLoading: postsLoading } = useFetch<IPostData[]>(`${API_BASE_URL}/api/posts/user/${id}`);
 
 
     // Fetch user profile data
