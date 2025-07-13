@@ -17,7 +17,8 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1d21 0%, #2b3035 100%);
+    background-color: #FFFFFF0d;
+
 }
 
 .loading-content {
@@ -52,7 +53,7 @@
 
 /* Profile Hero Section */
 .profile-hero {
-    background: linear-gradient(135deg, #2b3035 0%, #1a1d21 100%);
+    background-color: #FFFFFF0d;
     border-radius: 20px;
     padding: 2.5rem;
     margin-bottom: 2rem;
@@ -196,7 +197,8 @@
 
 /* Profile Details Card */
 .profile-details-card {
-    background: linear-gradient(135deg, #2b3035 0%, #1a1d21 100%) !important;
+    background-color: #FFFFFF0d;
+
     border: 1px solid #4a4a4a !important;
     border-radius: 20px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;

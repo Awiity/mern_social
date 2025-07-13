@@ -8,6 +8,7 @@ import { User, Edit3, Mail, Calendar, Shield, Upload, X } from 'lucide-react';
 import '../styles/userprofile.css';
 import { updateUser } from '../Network/user.api';
 import { AxiosResponse } from 'axios';
+import { Post } from '../Components/post';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production'
     ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
@@ -30,6 +31,15 @@ interface UpdateUserData {
     avatar?: File | null;
 }
 
+interface IPostData {
+    title: string;
+    body: string | null;
+    user_id: { username: string; _id: string };
+    file: string;
+    createdAt: Date;
+    _id?: string;
+}
+
 export function UserPage() {
     const { id } = useParams<{ id: string }>();
     const { user: currentUser } = useAuth();
@@ -39,6 +49,8 @@ export function UserPage() {
     const [updateError, setUpdateError] = useState<string | null>(null);
     const [updateSuccess, setUpdateSuccess] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const { data: posts, setData: setPosts, error: postError, isLoading: postsLoading } = useFetch<IPostData[]>(`${API_BASE_URL}/api/posts/user/${id}`);
+
 
     // Fetch user profile data
     const { data: userProfile, isLoading, error, reload } = useFetch<UserProfile>(
@@ -237,7 +249,7 @@ export function UserPage() {
                                     </div>
                                 </div>
                             </Col>
-                            
+
                             <Col md={6}>
                                 <div className="detail-item">
                                     <div className="detail-icon">
@@ -270,6 +282,28 @@ export function UserPage() {
                         </Row>
                     </Card.Body>
                 </Card>
+                {/* User Posts Section */}
+                {postsLoading ? (
+                    <div className="loading-container">
+                        <Spinner animation="border" variant="success" />
+                        <p className="loading-text">Loading posts...</p>
+                    </div>
+                ) : postError ? (
+                    <Alert variant="danger" className="error-alert">
+                        <h5>Error Loading Posts</h5>
+                        <p className="mb-0">{postError.message || 'Failed to load user posts.'}</p>
+                    </Alert>
+                ) : (
+                    <div className="user-posts-section">
+                        {posts && posts.length > 0 ? (posts.map((post: IPostData) => <Post key={post._id} post={post} />)) : (
+                            <Alert variant="info" className="no-posts-alert">
+                                <h5>No Posts Found</h5>
+                                <p className="mb-0">This user has not posted anything yet.</p>
+                            </Alert>
+                        )}
+                    </div>
+                )}
+
 
                 {/* Edit Profile Modal */}
                 <Modal show={showEditModal} onHide={handleCloseModal} className="edit-modal" centered>
