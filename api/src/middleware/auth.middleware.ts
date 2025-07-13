@@ -30,7 +30,7 @@ export const authenticate = async (
     console.log("Request URL:", req.url);
     console.log("Request method:", req.method);
     console.log("Request headers:", req.headers);
-    console.log("Raw cookies:", req.headers.cookie);
+    //console.log("Raw cookies:", req.headers.cookie);
 
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;

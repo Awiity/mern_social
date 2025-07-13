@@ -44,24 +44,6 @@ const userMongooseSchema = new mongoose.Schema<IUserDocument>({
 
 });
 
-/* CAUSES BUG: Upon login and subsequent call to user.save() to update refresh-token it triggers it to rerun password hashing resulting in change to password in db
-
-// Hashing password right before saving to DB
-userMongooseSchema.pre<IUserDocument>('save', async function (next) {
-    //if (!this.isModified('password')) return next(); // TODO: figure out what isModified method refers to.
-    try {
-        const salt = await bcrypt.genSalt(SALT_FACTOR);
-        const hashedPassword = await bcrypt.hash(this.password, salt);
-        console.log(hashedPassword, this.password
-
-        )
-        this.password = hashedPassword;
-        return next();
-    } catch (error) {
-        return next(error as Error);
-    }
-});
-*/
 userMongooseSchema.methods.comparePassword = async function (candidatePassword: string) : Promise<boolean> {
     const salt = await bcrypt.genSalt(SALT_FACTOR);
 
@@ -69,15 +51,5 @@ userMongooseSchema.methods.comparePassword = async function (candidatePassword: 
     //console.log(a, this.password);
     return bcrypt.compare(candidatePassword, this.password);
 };
-
-// Transform to remove password in responses
-/* userMongooseSchema.set('toJSON', {
-    transform: (doc, ret) => {
-      delete ret.password;
-      delete ret.__v;
-      return ret;
-    }
-  });
-*/ // TODO: figure out what that does  ?? ?? ? ??
 
 export const UserModel = mongoose.model<IUserDocument>('User', userMongooseSchema);

@@ -33,7 +33,7 @@ messageRoutes.get(
 // Update a message (edit)
 import { RequestHandler } from 'express';
 
-messageRoutes.put(
+messageRoutes.patch(
   '/messages/:messageId',
   messageController.updateMessage.bind(messageController) as RequestHandler
 );

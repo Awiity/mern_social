@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { Button, Card, Form, Alert, Spinner, Modal, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { timeSince } from '../Static/date.methods';
 import useFetch from '../Hooks/useFetch';
 import { useAuth } from '../Context/auth.context';
-import { User, Edit3, Mail, Calendar, Shield } from 'lucide-react';
+import { User, Edit3, Mail, Calendar, Shield, Upload, X } from 'lucide-react';
 import '../styles/userprofile.css';
+import { updateUser } from '../Network/user.api';
+import { AxiosResponse } from 'axios';
+
 const API_BASE_URL = process.env.NODE_ENV === 'production'
     ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
     : process.env.DEV_API_URL || 'http://localhost:4000';
@@ -17,12 +20,14 @@ interface UserProfile {
     role: string;
     createdAt: string;
     updatedAt: string;
+    avatar?: string;
 }
 
 interface UpdateUserData {
     username?: string;
     email?: string;
     password?: string;
+    avatar?: File | null;
 }
 
 export function UserPage() {
@@ -33,6 +38,7 @@ export function UserPage() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [updateError, setUpdateError] = useState<string | null>(null);
     const [updateSuccess, setUpdateSuccess] = useState(false);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
     // Fetch user profile data
     const { data: userProfile, isLoading, error, reload } = useFetch<UserProfile>(
@@ -51,6 +57,7 @@ export function UserPage() {
             setShowEditModal(true);
             setUpdateError(null);
             setUpdateSuccess(false);
+            setAvatarPreview(null);
         }
     };
 
@@ -59,6 +66,26 @@ export function UserPage() {
         setEditData({});
         setUpdateError(null);
         setUpdateSuccess(false);
+        setAvatarPreview(null);
+    };
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setEditData({ ...editData, avatar: file });
+
+            // Create preview URL
+            const previewUrl = URL.createObjectURL(file);
+            setAvatarPreview(previewUrl);
+        }
+    };
+
+    const removeAvatar = () => {
+        setEditData({ ...editData, avatar: null });
+        setAvatarPreview(null);
+        // Clear file input
+        const fileInput = document.getElementById('avatar-input') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
     };
 
     const handleUpdateSubmit = async (e: React.FormEvent) => {
@@ -71,43 +98,40 @@ export function UserPage() {
 
         try {
             // Filter out empty values
-            const updatePayload: UpdateUserData = {};
-            if (editData.username?.trim() && editData.username !== userProfile.username) {
-                updatePayload.username = editData.username.trim();
+            const formData = new FormData();
+
+            if (editData.username && editData.username.trim() !== userProfile.username) {
+                formData.append('username', editData.username.trim());
             }
-            if (editData.email?.trim() && editData.email !== userProfile.email) {
-                updatePayload.email = editData.email.trim();
+            if (editData.email && editData.email.trim() !== userProfile.email) {
+                formData.append('email', editData.email.trim());
             }
-            if (editData.password?.trim()) {
-                updatePayload.password = editData.password.trim();
+            if (editData.password && editData.password.length >= 8) {
+                formData.append('password', editData.password);
+            }
+            if (editData.avatar) {
+                formData.append('avatar', editData.avatar);
             }
 
-            if (Object.keys(updatePayload).length === 0) {
-                setUpdateError('No changes to update');
+            if (Array.from(formData.keys()).length === 0) {
+                setUpdateError('No changes detected to update');
                 return;
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(updatePayload),
-            });
+            const response: AxiosResponse = await updateUser(userProfile._id, formData);
 
-            if (!response.ok) {
-                const errorData = await response.json();
+            if (!response.status || response.status !== 200) {
+                const errorData = response.data || { message: 'Failed to update profile' };
                 throw new Error(errorData.message || 'Failed to update profile');
             }
 
             setUpdateSuccess(true);
             reload(); // Reload the profile data
 
-            // Close modal after 1.5 seconds
+            // Close modal after 2 seconds
             setTimeout(() => {
                 handleCloseModal();
-            }, 1500);
+            }, 2000);
 
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -119,8 +143,11 @@ export function UserPage() {
 
     if (isLoading) {
         return (
-            <div className="d-flex justify-content-center align-items-center min-vh-100">
-                <Spinner animation="border" variant="success" />
+            <div className="loading-container">
+                <div className="loading-content">
+                    <Spinner animation="border" variant="success" />
+                    <p className="loading-text">Loading profile...</p>
+                </div>
             </div>
         );
     }
@@ -128,190 +155,274 @@ export function UserPage() {
     if (error || !userProfile) {
         return (
             <div className="container mt-5">
-                <Alert variant="danger">
-                    {error?.message || 'User not found'}
-                </Alert>
+                <div className="error-container">
+                    <Alert variant="danger" className="error-alert">
+                        <h5>Profile Not Found</h5>
+                        <p className="mb-0">{error?.message || 'The requested user profile could not be found.'}</p>
+                    </Alert>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="container mt-4">
-            <div className="row justify-content-center">
-                <div className="col-lg-8">
-                    {/* Profile Card */}
-                    <Card className="profile-card mb-4">
-                        <Card.Header className="profile-header">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div className="profile-title">
-                                    <h4 className="mb-0">User Profile</h4>
+        <div className="profile-container">
+            <div className="profile-wrapper">
+                {/* Profile Header */}
+                <div className="profile-hero">
+                    <div className="profile-hero-content">
+                        <div className="profile-avatar-section">
+                            <div className="avatar-container">
+                                <img
+                                    src={userProfile.avatar || '/default-avatar.png'}
+                                    alt="User Avatar"
+                                    className="profile-avatar"
+                                />
+                                <div className="avatar-overlay">
+                                    <div className={`status-indicator ${userProfile.role.toLowerCase()}`}></div>
                                 </div>
-                                {isOwner && (
+                            </div>
+                        </div>
+                        <div className="profile-info-section">
+                            <div className="profile-main-info">
+                                <h1 className="profile-username">@{userProfile.username}</h1>
+                                <p className="profile-email">{userProfile.email}</p>
+                                <div className="profile-badges">
+                                    <span className={`role-badge role-${userProfile.role.toLowerCase()}`}>
+                                        <Shield size={14} />
+                                        {userProfile.role}
+                                    </span>
+                                </div>
+                            </div>
+                            {isOwner && (
+                                <div className="profile-actions">
                                     <Button
                                         variant="outline-success"
-                                        size="sm"
                                         onClick={handleEditClick}
                                         className="edit-profile-btn"
                                     >
-                                        <Edit3 size={16} className="me-2" />
+                                        <Edit3 size={16} />
                                         Edit Profile
                                     </Button>
-                                )}
-                            </div>
-                        </Card.Header>
-                        <Card.Body className="profile-body">
-                            <Row>
-                                <Col md={6}>
-                                    <div className="profile-field">
-                                        <div className="field-label">
-                                            <User size={16} className="me-2" />
-                                            Username
-                                        </div>
-                                        <div className="field-value">
-                                            @{userProfile.username}
-                                        </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Profile Details */}
+                <Card className="profile-details-card">
+                    <Card.Body>
+                        <h5 className="details-title">Profile Details</h5>
+                        <Row className="profile-details-grid">
+                            <Col md={6}>
+                                <div className="detail-item">
+                                    <div className="detail-icon">
+                                        <User size={20} />
                                     </div>
-                                </Col>
-                                <Col md={6}>
-                                    <div className="profile-field">
-                                        <div className="field-label">
-                                            <Mail size={16} className="me-2" />
-                                            Email
-                                        </div>
-                                        <div className="field-value">
-                                            {userProfile.email}
-                                        </div>
+                                    <div className="detail-content">
+                                        <div className="detail-label">Username</div>
+                                        <div className="detail-value">@{userProfile.username}</div>
                                     </div>
-                                </Col>
-                            </Row>
-                            <Row className="mt-3">
-                                <Col md={6}>
-                                    <div className="profile-field">
-                                        <div className="field-label">
-                                            <Shield size={16} className="me-2" />
-                                            Role
-                                        </div>
-                                        <div className="field-value">
+                                </div>
+                            </Col>
+                            <Col md={6}>
+                                <div className="detail-item">
+                                    <div className="detail-icon">
+                                        <Mail size={20} />
+                                    </div>
+                                    <div className="detail-content">
+                                        <div className="detail-label">Email Address</div>
+                                        <div className="detail-value">{userProfile.email}</div>
+                                    </div>
+                                </div>
+                            </Col>
+                            
+                            <Col md={6}>
+                                <div className="detail-item">
+                                    <div className="detail-icon">
+                                        <Shield size={20} />
+                                    </div>
+                                    <div className="detail-content">
+                                        <div className="detail-label">Account Role</div>
+                                        <div className="detail-value">
                                             <span className={`role-badge role-${userProfile.role.toLowerCase()}`}>
                                                 {userProfile.role}
                                             </span>
                                         </div>
                                     </div>
-                                </Col>
-                                <Col md={6}>
-                                    <div className="profile-field">
-                                        <div className="field-label">
-                                            <Calendar size={16} className="me-2" />
-                                            Member Since
-                                        </div>
-                                        <div className="field-value">
+                                </div>
+                            </Col>
+                            <Col md={6}>
+                                <div className="detail-item">
+                                    <div className="detail-icon">
+                                        <Calendar size={20} />
+                                    </div>
+                                    <div className="detail-content">
+                                        <div className="detail-label">Member Since</div>
+                                        <div className="detail-value">
                                             {timeSince(new Date(userProfile.createdAt))}
                                         </div>
                                     </div>
+                                </div>
+                            </Col>
+
+                        </Row>
+                    </Card.Body>
+                </Card>
+
+                {/* Edit Profile Modal */}
+                <Modal show={showEditModal} onHide={handleCloseModal} className="edit-modal" centered>
+                    <Modal.Header closeButton className="edit-modal-header">
+                        <Modal.Title>
+                            <Edit3 size={20} className="me-2" />
+                            Edit Profile
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className="edit-modal-body">
+                        <Form onSubmit={handleUpdateSubmit}>
+                            {/* Avatar Section */}
+                            <div className="avatar-edit-section">
+                                <div className="current-avatar-display">
+                                    <img
+                                        src={avatarPreview || userProfile.avatar || '/default-avatar.png'}
+                                        alt="Profile Avatar"
+                                        className="edit-avatar-preview"
+                                    />
+                                    {avatarPreview && (
+                                        <button
+                                            type="button"
+                                            className="remove-avatar-btn"
+                                            onClick={removeAvatar}
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="avatar-upload-controls">
+                                    <Form.Label className="avatar-upload-btn">
+                                        <Upload size={16} className="me-2" />
+                                        Choose New Avatar
+                                        <Form.Control
+                                            id="avatar-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            hidden
+                                            disabled={isUpdating}
+                                        />
+                                    </Form.Label>
+                                    <small className="avatar-help-text">
+                                        JPG, PNG or GIF. Max size: 5MB
+                                    </small>
+                                </div>
+                            </div>
+
+                            {/* Form Fields */}
+                            <Row>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label className="edit-form-label">
+                                            <User size={16} className="me-2" />
+                                            Username
+                                        </Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={editData.username || ''}
+                                            onChange={(e) => setEditData(prev => ({ ...prev, username: e.target.value }))}
+                                            className="edit-form-input"
+                                            disabled={isUpdating}
+                                            placeholder="Enter username"
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label className="edit-form-label">
+                                            <Mail size={16} className="me-2" />
+                                            Email Address
+                                        </Form.Label>
+                                        <Form.Control
+                                            type="email"
+                                            value={editData.email || ''}
+                                            onChange={(e) => setEditData(prev => ({ ...prev, email: e.target.value }))}
+                                            className="edit-form-input"
+                                            disabled={isUpdating}
+                                            placeholder="Enter email address"
+                                        />
+                                    </Form.Group>
                                 </Col>
                             </Row>
-                            {userProfile.updatedAt !== userProfile.createdAt && (
-                                <Row className="mt-3">
-                                    <Col md={6}>
-                                        <div className="profile-field">
-                                            <div className="field-label">
-                                                Last Updated
-                                            </div>
-                                            <div className="field-value">
-                                                {timeSince(new Date(userProfile.updatedAt))}
-                                            </div>
-                                        </div>
-                                    </Col>
-                                </Row>
-                            )}
-                        </Card.Body>
-                    </Card>
 
-                    {/* Edit Profile Modal */}
-                    <Modal show={showEditModal} onHide={handleCloseModal} className="edit-modal">
-                        <Modal.Header closeButton className="edit-modal-header">
-                            <Modal.Title>Edit Profile</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body className="edit-modal-body">
-                            <Form onSubmit={handleUpdateSubmit}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label className="edit-form-label">Username</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={editData.username || ''}
-                                        onChange={(e) => setEditData(prev => ({ ...prev, username: e.target.value }))}
-                                        className="edit-form-input"
-                                        disabled={isUpdating}
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3">
-                                    <Form.Label className="edit-form-label">Email</Form.Label>
-                                    <Form.Control
-                                        type="email"
-                                        value={editData.email || ''}
-                                        onChange={(e) => setEditData(prev => ({ ...prev, email: e.target.value }))}
-                                        className="edit-form-input"
-                                        disabled={isUpdating}
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3">
-                                    <Form.Label className="edit-form-label">New Password (optional)</Form.Label>
-                                    <Form.Control
-                                        type="password"
-                                        value={editData.password || ''}
-                                        onChange={(e) => setEditData(prev => ({ ...prev, password: e.target.value }))}
-                                        className="edit-form-input"
-                                        placeholder="Leave empty to keep current password"
-                                        disabled={isUpdating}
-                                    />
-                                </Form.Group>
-                                {updateError && (
-                                    <Alert variant="danger" className="mb-3">
-                                        {updateError}
-                                    </Alert>
-                                )}
-                                {updateSuccess && (
-                                    <Alert variant="success" className="mb-3">
-                                        Profile updated successfully!
-                                    </Alert>
-                                )}
-                                <div className="d-flex justify-content-end gap-2">
-                                    <Button
-                                        variant="secondary"
-                                        onClick={handleCloseModal}
-                                        disabled={isUpdating}
-                                        className="cancel-btn"
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        variant="success"
-                                        disabled={isUpdating}
-                                        className="update-btn"
-                                    >
-                                        {isUpdating ? (
-                                            <>
-                                                <Spinner
-                                                    as="span"
-                                                    animation="border"
-                                                    size="sm"
-                                                    role="status"
-                                                    aria-hidden="true"
-                                                    className="me-2"
-                                                />
-                                                Updating...
-                                            </>
-                                        ) : (
-                                            'Update Profile'
-                                        )}
-                                    </Button>
-                                </div>
-                            </Form>
-                        </Modal.Body>
-                    </Modal>
-                </div>
+                            <Form.Group className="mb-4">
+                                <Form.Label className="edit-form-label">
+                                    New Password (optional)
+                                </Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    value={editData.password || ''}
+                                    onChange={(e) => setEditData(prev => ({ ...prev, password: e.target.value }))}
+                                    className="edit-form-input"
+                                    placeholder="Enter new password (min. 8 characters)"
+                                    disabled={isUpdating}
+                                />
+                                <small className="password-help-text">
+                                    Leave empty to keep your current password
+                                </small>
+                            </Form.Group>
+
+                            {/* Alerts */}
+                            {updateError && (
+                                <Alert variant="danger" className="form-alert">
+                                    <strong>Error:</strong> {updateError}
+                                </Alert>
+                            )}
+                            {updateSuccess && (
+                                <Alert variant="success" className="form-alert">
+                                    <strong>Success:</strong> Profile updated successfully!
+                                </Alert>
+                            )}
+
+                            {/* Modal Actions */}
+                            <div className="modal-actions">
+                                <Button
+                                    variant="secondary"
+                                    onClick={handleCloseModal}
+                                    disabled={isUpdating}
+                                    className="cancel-btn"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="success"
+                                    disabled={isUpdating}
+                                    className="update-btn"
+                                >
+                                    {isUpdating ? (
+                                        <>
+                                            <Spinner
+                                                as="span"
+                                                animation="border"
+                                                size="sm"
+                                                role="status"
+                                                aria-hidden="true"
+                                                className="me-2"
+                                            />
+                                            Updating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Edit3 size={16} className="me-2" />
+                                            Update Profile
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </Form>
+                    </Modal.Body>
+                </Modal>
             </div>
-        </div>
+        </div >
     );
 }

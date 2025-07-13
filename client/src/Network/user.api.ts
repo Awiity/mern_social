@@ -27,8 +27,15 @@ export async function register(credentials: IRegisterCred) {
     return response;
 }
 
-export async function updateUser(id: string, body: object) {
-    const response = await axios.patch(`${API_BASE_URL}/api/users/:` + id, body);
+export async function updateUser(id: string, body: FormData) {
+    const response = await axios.patch(`${API_BASE_URL}/api/users/${id}`, body,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            withCredentials: true,
+        }
+    );
     return response;
 }
 

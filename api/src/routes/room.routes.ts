@@ -20,7 +20,7 @@ roomRoutes.get('/rooms/:roomId', roomController.getRoomById.bind(roomController)
 roomRoutes.get('/rooms/name/:roomName', roomController.getRoomByName.bind(roomController));
 
 // Update a room
-roomRoutes.put('/rooms/:roomId', roomController.updateRoom.bind(roomController));
+roomRoutes.patch('/rooms/:roomId', roomController.updateRoom.bind(roomController));
 
 // Delete a room
 roomRoutes.delete('/rooms/:roomId', roomController.deleteRoom.bind(roomController));
