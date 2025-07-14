@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { timeSince } from '../Static/date.methods';
 import useFetch from '../Hooks/useFetch';
 import { useAuth } from '../Context/auth.context';
-import { User, Edit3, Mail, Calendar, Shield, Upload, X } from 'lucide-react';
+import { User, Edit3, Mail, Calendar, Shield, Upload, X, CircleUserRound } from 'lucide-react';
 import '../styles/userprofile.css';
 import { updateUser } from '../Network/user.api';
 import { AxiosResponse } from 'axios';
@@ -17,8 +17,12 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 interface UserProfile {
     _id: string;
     username: string;
+    firstname?: string;
+    lastname?: string;
+    address?: string;
     email: string;
     role: string;
+    description?: string;
     createdAt: string;
     updatedAt: string;
     avatar?: string;
@@ -27,6 +31,10 @@ interface UserProfile {
 interface UpdateUserData {
     username?: string;
     email?: string;
+    firstname?: string;
+    lastname?: string;
+    address?: string;
+    description?: string;
     password?: string;
     avatar?: File | null;
 }
@@ -195,6 +203,7 @@ export function UserPage() {
                                 </div>
                             </div>
                         </div>
+
                         <div className="profile-info-section">
                             <div className="profile-main-info">
                                 <h1 className="profile-username">@{userProfile.username}</h1>
@@ -206,6 +215,7 @@ export function UserPage() {
                                     </span>
                                 </div>
                             </div>
+
                             {isOwner && (
                                 <div className="profile-actions">
                                     <Button
@@ -219,6 +229,9 @@ export function UserPage() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                    <div className="profile-description">
+                        {userProfile.description || 'I\'m just a regular user on this platform.'}
                     </div>
                 </div>
 
@@ -383,6 +396,60 @@ export function UserPage() {
                                             className="edit-form-input"
                                             disabled={isUpdating}
                                             placeholder="Enter email address"
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col md={6}>
+                                    <Form.Group className="mb-4">
+                                        <Form.Label className="edit-form-label">
+                                            <CircleUserRound size={16} className="me-2" />
+                                            Firstname
+                                        </Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={editData.firstname || ''}
+                                            disabled={isUpdating}
+                                            onChange={(e) => setEditData(prev => ({ ...prev, firstname: e.target.value }))}
+                                            placeholder="Enter your firstname"
+                                            className="edit-form-input"
+
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group className="mb-4">
+                                        <Form.Label className="edit-form-label">
+                                            <CircleUserRound size={16} className="me-2" />
+                                            Lastname
+                                        </Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={editData.lastname || ''}
+                                            disabled={isUpdating}
+                                            onChange={(e) => setEditData(prev => ({ ...prev, lastname: e.target.value }))}
+                                            placeholder="Enter your lastname"
+                                            className="edit-form-input"
+
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col md={12}>
+                                    <Form.Group className="mb-4">
+                                        <Form.Label className="edit-form-label">
+                                            <CircleUserRound size={16} className="me-2" />
+                                            Description
+                                        </Form.Label>
+                                        <Form.Control
+                                            type="area"
+                                            value={editData.description}
+                                            onChange={(e) => setEditData(prev => ({ ...prev, address: e.target.value }))}
+                                            className="edit-form-input"
+                                            placeholder="What are you up to?"
+                                            disabled={isUpdating}
                                         />
                                     </Form.Group>
                                 </Col>

@@ -1,6 +1,6 @@
 .register-container {
     background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    min-height: 100vh;
+    min-height: 80vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -117,47 +117,66 @@
 .text-muted {
     color: #b0b0b0 !important;
 }
+
 .not-registered a{
     color: #b0b0b0 !important;
     text-decoration: none !important;
     color: #28a745 !important;
 }
+
 .not-registered a:hover {
     color: #20c997 !important;
     text-decoration: underline !important;
 }
 
-@media (max-width: 768px) {
-    .register-card .card-body {
-        padding: 2.5rem !important;
-    }
-
+/* Enhanced responsive design */
+@media (max-width: 1400px) {
     .register-title {
-        font-size: 1.75rem !important;
+        font-size: 2rem !important;
     }
+}
 
+@media (max-width: 1200px) {
+    .register-title {
+        font-size: 1.9rem !important;
+    }
+    
     .register-subtitle {
-        font-size: 1rem !important;
-    }
-
-    .custom-input {
-        padding: 14px 18px !important;
-        font-size: 1rem !important;
-    }
-
-    .register-button {
-        padding: 14px !important;
         font-size: 1rem !important;
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 992px) {
+    .register-card {
+        border-radius: 12px !important;
+    }
+    
+    .register-title {
+        font-size: 1.8rem !important;
+    }
+    
+    .custom-input {
+        padding: 14px 18px !important;
+        font-size: 1.05rem !important;
+    }
+    
+    .register-button {
+        padding: 14px !important;
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .register-container {
+        padding: 1rem 0;
+    }
+    
     .register-card .card-body {
         padding: 2rem !important;
     }
 
     .register-title {
-        font-size: 1.5rem !important;
+        font-size: 1.75rem !important;
     }
 
     .register-subtitle {
@@ -166,11 +185,91 @@
 
     .custom-input {
         padding: 12px 16px !important;
-        font-size: 0.95rem !important;
+        font-size: 1rem !important;
     }
 
     .register-button {
         padding: 12px !important;
+        font-size: 1rem !important;
+    }
+    
+    .form-label {
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .register-card {
+        border-radius: 8px !important;
+        margin: 0.5rem;
+    }
+    
+    .register-card .card-body {
+        padding: 1.5rem !important;
+    }
+
+    .register-title {
+        font-size: 1.5rem !important;
+    }
+
+    .register-subtitle {
+        font-size: 0.9rem !important;
+    }
+
+    .custom-input {
+        padding: 10px 14px !important;
         font-size: 0.95rem !important;
+    }
+
+    .register-button {
+        padding: 10px !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .form-label {
+        font-size: 0.95rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .register-card {
+        margin: 0.25rem;
+    }
+    
+    .register-card .card-body {
+        padding: 1.25rem !important;
+    }
+    
+    .register-title {
+        font-size: 1.4rem !important;
+    }
+    
+    .register-subtitle {
+        font-size: 0.85rem !important;
+    }
+    
+    .custom-input {
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .register-button {
+        padding: 8px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+@media (max-width: 375px) {
+    .register-card .card-body {
+        padding: 1rem !important;
+    }
+    
+    .register-title {
+        font-size: 1.3rem !important;
+    }
+    
+    .register-subtitle {
+        font-size: 0.8rem !important;
     }
 }

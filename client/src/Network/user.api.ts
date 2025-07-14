@@ -19,7 +19,7 @@ export interface IRegisterCred {
     role: string | "user",
 }
 axios.defaults.withCredentials = true;
-export async function register(credentials: IRegisterCred) {
+export async function register(credentials: FormData) {
     const response = await axios.post(`${API_BASE_URL}/api/auth/register`, credentials, { withCredentials: true });
     if (response.statusText !== "OK") return response;
     //if (response.statusText !== "OK") return response

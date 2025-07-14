@@ -801,3 +801,17 @@
     outline-offset: 2px !important;
 }
 
+
+
+.profile-description {
+    color: #b0b0b0;
+    font-size: 1rem;
+    margin-top: 1rem;
+    margin-left: 1rem;
+    text-align: left;;
+
+}
+.profile-description:hover {
+    color: #ffffff;
+
+}
