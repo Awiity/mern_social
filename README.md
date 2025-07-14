@@ -1,6 +1,6 @@
 # Small social-media-like web application
 
-https://opal-social-mocha.vercel.app/news
+https://opal-social-mocha.vercel.app
 
 ## Tech Stack
 
