@@ -122,9 +122,13 @@ export function UserPage() {
 
             if (editData.username && editData.username.trim() !== userProfile.username) {
                 formData.append('username', editData.username.trim());
+            } else {
+                formData.append('username', userProfile.username);
             }
             if (editData.email && editData.email.trim() !== userProfile.email) {
                 formData.append('email', editData.email.trim());
+            } else {
+                formData.append('email', userProfile.email);
             }
             if (editData.password && editData.password.length >= 8) {
                 formData.append('password', editData.password);
