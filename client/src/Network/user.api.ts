@@ -18,12 +18,16 @@ export interface IRegisterCred {
     address: string | null,
     role: string | "user",
 }
+
 axios.defaults.withCredentials = true;
+
 export async function register(credentials: FormData) {
-    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, credentials, { withCredentials: true });
-    if (response.statusText !== "OK") return response;
-    //if (response.statusText !== "OK") return response
-    //localStorage.setItem('auth', response.data);
+    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, credentials, {
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }
+    });
     return response;
 }
 
@@ -38,34 +42,3 @@ export async function updateUser(id: string, body: FormData) {
     );
     return response;
 }
-
-
-/*import axios from "axios";
-
-
-export interface ILoginCred {
-    email: string | null,
-    password: string | null
-};
-
-export interface IRegisterCred {
-    password: string,
-    username: string,
-    firstname: string,
-    lastname: string | undefined,
-    email: string,
-    description: string | undefined,
-    address: string | undefined,
-    role: string | "user",
-}
-
-
-
-export async function register(credentials: IRegisterCred) {
-    try {
-        const response = await axios.post(api_url + "users/", { credentials });
-        return response;
-    } catch (error) {
-        console.error(error);
-    }
-}*/
