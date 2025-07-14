@@ -9,7 +9,7 @@ export const userSchema = z.object({
         message: "Password must contain at least one uppercase, one lowercase, and one number"
       }),
     username: z.string().min(3).max(15),
-    firstname: z.string().max(15),
+    firstname: z.string().max(15).optional(),
     lastname: z.string().max(15).optional(),
     email: z.string().min(5).max(20),
     description: z.string().optional(),
