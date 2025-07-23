@@ -1,4 +1,4 @@
-import { Router } from 'express';
+/*import { Router } from 'express';
 import SSEController from '../controllers/sse.controller';
 
 const router = Router();
@@ -22,4 +22,4 @@ router.get('/rooms', sseController.getAllRooms);
 router.get('/stats', sseController.getStats);
 router.get('/clients', sseController.getClients);
 
-export default router;
+export default router;*/
