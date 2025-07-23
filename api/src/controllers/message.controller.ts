@@ -3,8 +3,15 @@ import { MessageModel, messageSchema, IMessage } from '../models/message.model';
 import { RoomModel } from '../models/room.model';
 import mongoose from 'mongoose';
 import { z } from 'zod';
+import SSEController from './sse.controller';
 
 export class MessageController {
+    private sseController: SSEController;
+
+    constructor() {
+        this.sseController = new SSEController();
+    }
+
     async createMessage(req: Request, res: Response) {
         try {
             console.log('Creating message with data:', req.body);
@@ -28,6 +35,19 @@ export class MessageController {
             const savedMessage = await message.save();
             await savedMessage.populate('user_id', 'username email');
             await savedMessage.populate('room_id', 'name');
+
+            // Send real-time message via SSE
+            const messageData = {
+                id: savedMessage._id,
+                message: savedMessage.content,
+                username: (savedMessage.user_id as any).username,
+                userId: (savedMessage.user_id as any)._id,
+                roomId: (savedMessage.room_id as any)._id,
+                roomName: (savedMessage.room_id as any).name,
+                timestamp: savedMessage.createdAt
+            };
+
+            this.sseController.sendMessageToRoom(validatedData.room_id, messageData);
 
             res.status(201).json({
                 success: true,
@@ -85,6 +105,7 @@ export class MessageController {
 
             const totalMessages = await MessageModel.countDocuments({ room_id: roomId });
             const totalPages = Math.ceil(totalMessages / limit);
+            
             res.status(200).json({
                 success: true,
                 data: {
