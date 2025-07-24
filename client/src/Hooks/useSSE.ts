@@ -72,9 +72,9 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             },
 
             onMessage: (data) => {
-                console.log('New message received:', data);
+                console.log('New message received:', data.data);
                 setMessages(prev => [...prev, {
-                    ...data,
+                    ...data.data,
                     id: Date.now() + Math.random(),
                     timestamp: new Date(data.timestamp)
                 }]);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosResponse } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ILoginCred } from "../Network/user.api";
@@ -7,7 +8,7 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
     ? 'https://opalsocialbe.vercel.app'
     : 'http://localhost:4000';
 
-type User = {
+export interface User {
     _id: string;
     username: string,
     email: string;

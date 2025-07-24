@@ -53,7 +53,6 @@ class SSEManager {
     // Add client connection
     addClient(clientId: string, userId: string, username: string, response: Response): void {
         // Remove existing client with same userId to prevent duplicates
-        this.removeClientByUserId(userId);
 
         const client: SSEClient = {
             id: clientId,
@@ -449,11 +448,12 @@ export class SSEController {
     }
 
     // SSE connection endpoint
-    connect = (req: Request, res: Response) => {
+    connect = (req: Request, res: Response): void => {
         const { userId, username } = req.query;
+        console.log(`SSE connection request from userId: ${userId}, username: ${username}`);
 
         if (!userId || !username) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: 'userId and username are required'
             });
@@ -478,12 +478,12 @@ export class SSEController {
     }
 
     // Join room endpoint
-    joinRoom = async (req: Request, res: Response) => {
+    joinRoom = (req: Request, res: Response): void => {
         try {
             const { userId, roomId, roomName } = req.body;
 
             if (!userId || !roomId || !roomName) {
-                return res.status(400).json({
+                res.status(400).json({
                     success: false,
                     message: 'userId, roomId, and roomName are required'
                 });
@@ -492,10 +492,11 @@ export class SSEController {
             // Find client by userId
             const client = Array.from(this.sseManager.getAllClients()).find(c => c.userId === userId);
             if (!client) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: 'Client not connected'
                 });
+                return;
             }
 
             const success = this.sseManager.joinRoom(client.id, roomId, roomName);
@@ -526,12 +527,12 @@ export class SSEController {
     }
 
     // Leave room endpoint
-    leaveRoom = async (req: Request, res: Response) => {
+    leaveRoom = (req: Request, res: Response): void => {
         try {
             const { userId, roomId } = req.body;
 
             if (!userId || !roomId) {
-                return res.status(400).json({
+                res.status(400).json({
                     success: false,
                     message: 'userId and roomId are required'
                 });
@@ -540,10 +541,11 @@ export class SSEController {
             // Find client by userId
             const client = Array.from(this.sseManager.getAllClients()).find(c => c.userId === userId);
             if (!client) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: 'Client not connected'
                 });
+                return;
             }
 
             const success = this.sseManager.leaveRoom(client.id, roomId);
@@ -569,12 +571,12 @@ export class SSEController {
     }
 
     // Send typing indicator
-    sendTyping = async (req: Request, res: Response) => {
+    sendTyping = (req: Request, res: Response): void => {
         try {
             const { userId, roomId, isTyping } = req.body;
 
             if (!userId || !roomId || typeof isTyping !== 'boolean') {
-                return res.status(400).json({
+                res.status(400).json({
                     success: false,
                     message: 'userId, roomId, and isTyping are required'
                 });
@@ -583,10 +585,11 @@ export class SSEController {
             // Find client by userId
             const client = Array.from(this.sseManager.getAllClients()).find(c => c.userId === userId);
             if (!client) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: 'Client not connected'
                 });
+                return;
             }
 
             const success = this.sseManager.sendTyping(client.id, roomId, isTyping);
@@ -611,16 +614,17 @@ export class SSEController {
     }
 
     // Get room info
-    getRoomInfo = async (req: Request, res: Response) => {
+    getRoomInfo = (req: Request, res: Response): void => {
         try {
             const { roomId } = req.params;
             const roomInfo = this.sseManager.getRoomInfo(roomId);
 
             if (!roomInfo) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: 'Room not found'
                 });
+                return;
             }
 
             res.json({

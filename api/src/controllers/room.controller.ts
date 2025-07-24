@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { RoomModel, roomsSchema, IRoom } from '../models/room.model';
+import { RoomModel, roomsSchema } from '../models/room.model';
 import { MessageModel } from '../models/message.model';
 import mongoose from 'mongoose';
 

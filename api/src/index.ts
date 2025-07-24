@@ -8,6 +8,7 @@ import roomRoutes from './routes/room.routes';
 import messageRoutes from './routes/message.routes';
 import likeRoutes from './routes/like.routes';
 import commentRoutes from './routes/comment.routes';
+import sseRoutes from './routes/sse.routes';
 
 const cors = require('cors');
 
@@ -41,7 +42,7 @@ app.use('/api', roomRoutes);
 app.use('/api', messageRoutes);
 app.use('/api', likeRoutes);
 app.use('/api', commentRoutes);
-//app.use('/api/sse', sseRoutes); // SSE routes
+app.use('/api/sse', sseRoutes); // SSE routes
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
@@ -62,7 +63,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // 404 handler
-app.use('*', (req: Request, res: Response) => {
+app.use(/(.*)/, (req: Request, res: Response) => {
     res.status(404).json({
         success: false,
         message: 'Endpoint not found'

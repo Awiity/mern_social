@@ -39,6 +39,8 @@ export interface EventHandlers {
     onHeartbeat?: (data: any) => void;
 }
 
+
+
 // services/sse.service.ts
 export class SSEService {
     private eventSource: EventSource | null = null;
@@ -48,7 +50,7 @@ export class SSEService {
     private currentRoomId: string | null = null;
     private eventHandlers: EventHandlers = {};
     private reconnectAttempts = 0;
-    private maxReconnectAttempts = 5;
+    private maxReconnectAttempts = 3;
     private reconnectDelay = 1000;
     private isConnected = false;
 
@@ -62,6 +64,7 @@ export class SSEService {
     async connect(): Promise<boolean> {
         try {
             const url = `${this.baseUrl}/connect?userId=${encodeURIComponent(this.userId)}&username=${encodeURIComponent(this.username)}`;
+            console.log(`Connecting to SSE at ${url}`);
 
             this.eventSource = new EventSource(url);
 
@@ -99,6 +102,7 @@ export class SSEService {
 
         // Connection events
         this.eventSource.addEventListener('connection', (event) => {
+            console.log("WWWWWWWWWWWWWWWWWWWWWWWWWWWW", JSON.parse(event.data))
             const data = JSON.parse(event.data);
             console.log('Connected to SSE:', data);
             this.eventHandlers.onConnection?.(data);
@@ -106,6 +110,7 @@ export class SSEService {
 
         // Message events
         this.eventSource.addEventListener('message', (event) => {
+            console.log('Message event received:', event);
             const data = JSON.parse(event.data);
             console.log('New message:', data);
             this.eventHandlers.onMessage?.(data);
@@ -113,6 +118,7 @@ export class SSEService {
 
         // User joined events
         this.eventSource.addEventListener('user-joined', (event) => {
+            console.log('User joined event received:', event);
             const data = JSON.parse(event.data);
             console.log('User joined:', data);
             this.eventHandlers.onUserJoined?.(data);
@@ -120,6 +126,7 @@ export class SSEService {
 
         // User left events
         this.eventSource.addEventListener('user-left', (event) => {
+            console.log('User left event received:', event);
             const data = JSON.parse(event.data);
             console.log('User left:', data);
             this.eventHandlers.onUserLeft?.(data);
@@ -127,12 +134,14 @@ export class SSEService {
 
         // Typing events
         this.eventSource.addEventListener('typing', (event) => {
+            console.log('Typing event received:', event);
             const data = JSON.parse(event.data);
             this.eventHandlers.onTyping?.(data);
         });
 
         // Room users update events
         this.eventSource.addEventListener('room-users', (event) => {
+            console.log('Room users update event received:', event);
             const data = JSON.parse(event.data);
             console.log('Room users updated:', data);
             this.eventHandlers.onRoomUsers?.(data);
@@ -140,6 +149,7 @@ export class SSEService {
 
         // Error events
         this.eventSource.addEventListener('error', (event: MessageEvent) => {
+            console.error('SSE error event received:', event);
             const data = JSON.parse(event.data);
             console.error('SSE error:', data);
             this.eventHandlers.onError?.(data);
@@ -147,6 +157,7 @@ export class SSEService {
 
         // Heartbeat events
         this.eventSource.addEventListener('heartbeat', (event) => {
+            console.log('Heartbeat received', event);
             const data = JSON.parse(event.data);
             this.eventHandlers.onHeartbeat?.(data);
         });
@@ -340,7 +351,7 @@ export class SSEService {
             this.eventSource = null;
             this.isConnected = false;
             this.currentRoomId = null;
-            console.log('SSE connection closed');
+            console.log('SSE connection closed ...');
         }
     }
 

@@ -39,7 +39,7 @@ export class MessageController {
             // Send real-time message via SSE
             const messageData = {
                 id: savedMessage._id,
-                message: savedMessage.content,
+                content: savedMessage.content,
                 username: (savedMessage.user_id as any).username,
                 userId: (savedMessage.user_id as any)._id,
                 roomId: (savedMessage.room_id as any)._id,

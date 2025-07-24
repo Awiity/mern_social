@@ -1,25 +1,25 @@
-/*import { Router } from 'express';
+import { Router } from 'express';
 import SSEController from '../controllers/sse.controller';
 
-const router = Router();
+const sseRoutes = Router();
 const sseController = new SSEController();
 
 // SSE connection endpoint
-router.get('/connect', sseController.connect);
+sseRoutes.get('/connect', sseController.connect);
 
 // Room management
-router.post('/join-room', sseController.joinRoom);
-router.post('/leave-room', sseController.leaveRoom);
+sseRoutes.post('/join-room', sseController.joinRoom);
+sseRoutes.post('/leave-room', sseController.leaveRoom);
 
 // Typing indicators
-router.post('/typing', sseController.sendTyping);
+sseRoutes.post('/typing', sseController.sendTyping);
 
 // Room information
-router.get('/room/:roomId', sseController.getRoomInfo);
-router.get('/rooms', sseController.getAllRooms);
+sseRoutes.get('/room/:roomId', sseController.getRoomInfo);
+sseRoutes.get('/rooms', sseController.getAllRooms);
 
 // Statistics and monitoring
-router.get('/stats', sseController.getStats);
-router.get('/clients', sseController.getClients);
+sseRoutes.get('/stats', sseController.getStats);
+sseRoutes.get('/clients', sseController.getClients);
 
-export default router;*/
+export default sseRoutes;

@@ -1,19 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Button, Form, Modal, ListGroup, Badge, InputGroup, Dropdown } from 'react-bootstrap';
 import { Send, Users, Plus, Search, Phone, Video, MoreVertical, Smile, Paperclip } from 'lucide-react';
 import { ChatService } from '../Services/chat.service';
-import { useAuth } from '../Context/auth.context';
-
-import '../styles/chatroom.css'; // Import your custom styles
+import { useAuth, User } from '../Context/auth.context';
+import '../styles/chatroom.css'; 
+import { useSSE } from '../Hooks/useSSE';
 
 // Types aligned with your models
-interface User {
+interface UserC extends User {
     _id: string;
     username: string;
-    firstname: string;
-    lastname?: string;
     email: string;
-    role: 'user' | 'admin';
+    role: string;
     isOnline?: boolean;
     socketId?: string;
 }
@@ -27,7 +26,7 @@ interface RoomUser {
 interface Message {
     _id: string;
     content: string;
-    user_id: User;
+    user_id: UserC;
     room_id: string;
     sender?: {
         _id: string;
@@ -75,29 +74,47 @@ const ChatRoomPage: React.FC = () => {
     const { user: currentUser, isAuthenticated } = useAuth();
     const chatService = new ChatService();
 
-    // Temporary solution before integrating with a real-time backend
-    const isVercel: boolean = true;
+    // SSE Hook
+    const {
+        isConnected,
+        isConnecting,
+        error: sseError,
+        currentRoomId,
+        roomUsers,
+        typingUsers,
+        messages: sseMessages,
+        connect,
+        joinRoom,
+        leaveRoom,
+        sendTyping,
+        clearMessages
+    } = useSSE({
+        userId: currentUser?._id || '',
+        username: currentUser?.username || '',
+        autoConnect: true,
+        baseUrl: process.env.NODE_ENV === 'production'
+            ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app' :
+            process.env.DEV_API_URL || 'http://localhost:4000/api/sse'
+    });
 
     // State
-    //const [socket, setSocket] = useState<Socket | null>(null);
     const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    //const [onlineUsers, setOnlineUsers] = useState<RoomUser[]>([]);
     const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
     const [showUserListModal, setShowUserListModal] = useState(false);
     const [newRoomName, setNewRoomName] = useState('');
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [isTyping, setIsTyping] = useState(false);
-    //const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [allUsers, setAllUsers] = useState<User[]>([]);
+    const [allUsers, setAllUsers] = useState<UserC[]>([]);
     const [roomType, setRoomType] = useState<'group' | 'private'>('group');
     const [loading, setLoading] = useState(true);
     const [messageSearchQuery, setMessageSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
+
     const API_BASE_URL = process.env.NODE_ENV === 'production'
         ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
         : process.env.DEV_API_URL || 'http://localhost:4000';
@@ -106,81 +123,14 @@ const ChatRoomPage: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Initialize socket connection
+    // Initialize SSE connection
     useEffect(() => {
+        if (isAuthenticated && currentUser && !isConnected && !isConnecting) {
+            connect();
+        }
+
         loadAllUsers();
-        /*if (isAuthenticated && currentUser) {
-            // Connect to your backend socket server
-            const newSocket = io(`${API_BASE_URL}`);
-            setSocket(newSocket);
-            console.log('Socket connected:', newSocket.id);
-            // Socket event listeners
-            newSocket.on('connect', () => {
-                console.log('Connected to server with socket ID:', newSocket.id);
-            });
-
-            // Listen for incoming messages
-            newSocket.on('receive-message', (chatMessage: any) => {
-                console.log('Received message:', chatMessage);
-
-                // Convert the backend message format to frontend format
-                const message: Message = {
-                    _id: chatMessage.id,
-                    content: chatMessage.message,
-                    user_id: {
-                        _id: chatMessage.userId,
-                        username: chatMessage.username,
-                        firstname: chatMessage.username,
-                        email: '',
-                        role: 'user'
-                    },
-                    room_id: chatMessage.roomName,
-                    createdAt: new Date(chatMessage.timestamp),
-                    updatedAt: new Date(chatMessage.timestamp)
-                };
-
-                setMessages(prev => [...prev, message]);
-            });
-
-            // Listen for user events
-            newSocket.on('user-joined', (data: any) => {
-                console.log(`${data.username} joined room`);
-                loadRooms(); // Refresh rooms when user joins
-            });
-
-            newSocket.on('user-left', (data: any) => {
-                console.log(`${data.username} left room`);
-                loadRooms(); // Refresh rooms when user leaves
-            });
-
-            // Listen for room users updates
-            newSocket.on('room-users', (data: { users: RoomUser[] }) => {
-                console.log('Room users updated:', data.users);
-                setOnlineUsers(data.users);
-            });
-
-            // Listen for typing indicators
-            newSocket.on('user-typing', (data: { username: string; roomName: string; isTyping: boolean }) => {
-                if (data.username !== currentUser.username) {
-                    if (data.isTyping) {
-                        setTypingUsers(prev => [...prev.filter(u => u !== data.username), data.username]);
-                    } else {
-                        setTypingUsers(prev => prev.filter(u => u !== data.username));
-                    }
-                }
-            });
-
-            // Listen for errors
-            newSocket.on('error', (error: string) => {
-                console.error('Socket error:', error);
-                alert('Socket error: ' + error);
-            });
-
-            return () => {
-                newSocket.disconnect();
-            };
-        }*/
-    }, [isAuthenticated, currentUser]);
+    }, [isAuthenticated, currentUser, isConnected, isConnecting, connect]);
 
     // Load user's rooms
     const loadRooms = async () => {
@@ -210,6 +160,7 @@ const ChatRoomPage: React.FC = () => {
 
             if (page === 1) {
                 setMessages(response.data.messages || []);
+                clearMessages(); // Clear SSE messages when loading fresh
             } else {
                 setMessages(prev => [...(response.data.messages || []), ...prev]);
             }
@@ -231,50 +182,72 @@ const ChatRoomPage: React.FC = () => {
         }
     };
 
+    // Merge SSE messages with loaded messages
+    const getAllMessages = () => {
+        const combinedMessages = [...messages];
+
+        // Add SSE messages that aren't already in the messages array
+        sseMessages.forEach((sseMsg: any) => {
+            if (sseMsg.type !== 'system' && !combinedMessages.find(msg => msg._id === sseMsg.id)) {
+                // Convert SSE message format to Message format
+                const convertedMessage: Message = {
+                    _id: sseMsg.id?.toString() || Date.now().toString(),
+                    content: sseMsg.content,
+                    user_id: {
+                        _id: sseMsg.userId || sseMsg.user_id,
+                        username: sseMsg.username,
+                        email: '',
+                        role: 'user'
+                    },
+                    room_id: currentRoom?._id || '',
+                    createdAt: sseMsg.timestamp || new Date(),
+                    updatedAt: sseMsg.timestamp || new Date()
+                };
+                combinedMessages.push(convertedMessage);
+            }
+        });
+
+        // Sort by timestamp
+        return combinedMessages.sort((a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+    };
+
     // Auto scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [messages, sseMessages]);
 
     // Handle room change
     const handleRoomChange = async (room: Room) => {
-        // TOFIX: Commented out socket join/leave logic as Vercel does not support WebSockets
         if (currentUser) {
-            // Leave current room if any
-            if (currentRoom) {
-                console.log('Leaving room:', currentRoom.name);
-                //socket.emit('leave-room', currentRoom.name);
+            // Leave current room via SSE
+            if (currentRoom && currentRoomId) {
+                await leaveRoom();
             }
 
-            // Join new room - using room name as per your backend
-            console.log('Joining room:', room.name);
-            /*socket.emit('join-room', {
-                roomName: room.name,
-                username: currentUser.username
-            });*/
+            // Join new room via SSE
+            const joinSuccess = await joinRoom(room._id, room.name);
 
-            setCurrentRoom(room);
-            await loadMessages(room._id);
+            if (joinSuccess) {
+                setCurrentRoom(room);
+                await loadMessages(room._id);
+            } else {
+                console.error('Failed to join room via SSE');
+                // Fallback: still set the room and load messages
+                setCurrentRoom(room);
+                await loadMessages(room._id);
+            }
         }
     };
 
     // Handle message send
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TOFIX: Commented out socket logic as Vercel does not support WebSockets
 
-        if (newMessage.trim() && currentUser && currentRoom /* && socket*/) {
+        if (newMessage.trim() && currentUser && currentRoom) {
             try {
-                // Send message via socket (real-time)
-                /*socket.emit('send-message', {
-                    roomName: currentRoom.name,
-                    message: newMessage.trim(),
-                    user_id: currentUser._id,
-                    user_socket_id: socket.id,
-                    username: currentUser.username
-                });*/
-
-                // Also save to database via API
+                // Send message via API (this will trigger SSE broadcast to all users)
                 const messageData = {
                     content: newMessage.trim(),
                     user_id: currentUser._id,
@@ -285,25 +258,25 @@ const ChatRoomPage: React.FC = () => {
 
                 setNewMessage('');
                 setIsTyping(false);
+
+                // Stop typing indicator
+                if (isConnected) {
+                    sendTyping(false);
+                }
             } catch (error) {
                 console.error('Error sending message:', error);
             }
         }
     };
 
-    // Handle typing
-    // TOFIX: Commented out socket logic as Vercel does not support WebSockets
-
+    // Handle typing with SSE
     const handleTyping = (value: string) => {
         setNewMessage(value);
 
-        if (/*socket &&*/ currentUser && currentRoom) {
+        if (isConnected && currentUser && currentRoom) {
             if (!isTyping && value.trim()) {
                 setIsTyping(true);
-                /*socket.emit('typing', {
-                    roomName: currentRoom.name,
-                    username: currentUser.username
-                });*/
+                sendTyping(true);
             }
 
             if (typingTimeoutRef.current) {
@@ -312,17 +285,13 @@ const ChatRoomPage: React.FC = () => {
 
             typingTimeoutRef.current = setTimeout(() => {
                 setIsTyping(false);
-                /*socket.emit('stop-typing', {
-                    roomName: currentRoom.name,
-                    username: currentUser.username
-                });*/
+                sendTyping(false);
             }, 1000);
         }
     };
 
     // Handle create room
     const handleCreateRoom = async () => {
-
         if (newRoomName.trim() && currentUser) {
             try {
                 const roomData = {
@@ -341,7 +310,7 @@ const ChatRoomPage: React.FC = () => {
                 roomData.users.push({
                     id: currentUser._id,
                     username: currentUser.username,
-                    socketId: '' // Will be populated when user joins"
+                    socketId: '' // Will be populated when user joins
                 });
                 const newRoom = await chatService.createRoom(roomData);
                 setRooms(prev => [...prev, newRoom]);
@@ -358,7 +327,7 @@ const ChatRoomPage: React.FC = () => {
     };
 
     // Handle private chat
-    const handlePrivateChat = async (user: User) => {
+    const handlePrivateChat = async (user: UserC) => {
         if (!currentUser) return;
 
         const existingPrivateRoom = rooms.find(room =>
@@ -417,8 +386,8 @@ const ChatRoomPage: React.FC = () => {
     );
 
     // Get display name for user
-    const getDisplayName = (user: User): string => {
-        return user.lastname ? `${user.firstname} ${user.lastname}` : user.firstname;
+    const getDisplayName = (user: UserC): string => {
+        return user.username;
     };
 
     // Get sender display name for message
@@ -426,6 +395,16 @@ const ChatRoomPage: React.FC = () => {
         if (message.user_id) return message.user_id.username;
         return "Unknown Sender";
     };
+
+    // Connection status indicator
+    const getConnectionStatus = () => {
+        if (isConnecting) return { text: 'Connecting...', color: 'warning' };
+        if (isConnected) return { text: 'Connected', color: 'success' };
+        if (sseError) return { text: `Error: ${sseError}`, color: 'danger' };
+        return { text: 'Disconnected', color: 'secondary' };
+    };
+
+    const connectionStatus = getConnectionStatus();
 
     if (!isAuthenticated) {
         return (
@@ -470,6 +449,13 @@ const ChatRoomPage: React.FC = () => {
                                 </Button>
                             </div>
 
+                            {/* Connection Status */}
+                            <div className="mb-3">
+                                <Badge bg={connectionStatus.color} className="d-block w-100 py-2">
+                                    {connectionStatus.text}
+                                </Badge>
+                            </div>
+
                             {/* Search */}
                             <InputGroup>
                                 <InputGroup.Text>
@@ -497,7 +483,12 @@ const ChatRoomPage: React.FC = () => {
                                     >
                                         <div className="flex-grow-1">
                                             <div className="d-flex justify-content-between align-items-center">
-                                                <strong className="text-truncate">{room.type !== 'private' ? room.name : room.users![0].username == currentUser?.username ? room.users![1].username : room.users![0].username}</strong>
+                                                <strong className="text-truncate">
+                                                    {room.type !== 'private' ? room.name :
+                                                        room.users?.[0]?.username === currentUser?.username ?
+                                                            room.users?.[1]?.username :
+                                                            room.users?.[0]?.username}
+                                                </strong>
                                                 <small className="text-muted last-activity">
                                                     {room.lastActivity && new Date(room.lastActivity).toLocaleTimeString()}
                                                 </small>
@@ -523,7 +514,7 @@ const ChatRoomPage: React.FC = () => {
                         {/* Online Users */}
                         <div className="p-3 border-top bg-dark">
                             <div className="d-flex justify-content-between align-items-center mb-2">
-                                <small className="text-muted">Online Users</small>
+                                <small className="text-muted">Room Users ({roomUsers.length})</small>
                                 <Button
                                     variant="link"
                                     size="sm"
@@ -533,25 +524,27 @@ const ChatRoomPage: React.FC = () => {
                                 </Button>
                             </div>
                             <div className="d-flex flex-wrap gap-1">
-                                {/*onlineUsers.slice(0, 5).map(user => (
+                                {roomUsers.slice(0, 5).map((user: any) => (
                                     <Badge
-                                        key={user.id}
+                                        key={user.userId}
                                         bg="success"
                                         pill
                                         className="cursor-pointer"
                                         onClick={() => {
-                                            const fullUser = allUsers.find(u => u._id === user.id);
-                                            if (fullUser) handlePrivateChat(fullUser);
+                                            const fullUser = allUsers.find(u => u._id === user.userId);
+                                            if (fullUser && fullUser._id !== currentUser?._id) {
+                                                handlePrivateChat(fullUser);
+                                            }
                                         }}
                                     >
                                         {user.username}
                                     </Badge>
-                                ))*/}
-                                {/*onlineUsers.length > 5 && (
+                                ))}
+                                {roomUsers.length > 5 && (
                                     <Badge bg="secondary" pill>
-                                        +{onlineUsers.length - 5}
+                                        +{roomUsers.length - 5}
                                     </Badge>
-                                )*/}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -569,7 +562,7 @@ const ChatRoomPage: React.FC = () => {
                                         <small className="text-muted">
                                             {currentRoom.type === 'private' ? 'Private conversation' :
                                                 currentRoom.type === 'general' ? 'General room' :
-                                                    `${currentRoom.users?.length || 0} members`}
+                                                    `${roomUsers.length} members online`}
                                         </small>
                                     </div>
                                     <div className="d-flex gap-2">
@@ -618,13 +611,13 @@ const ChatRoomPage: React.FC = () => {
                                 )}
 
                                 <div className="space-y-4 overflow-auto p-3" style={{ height: 'calc(100vh - 210px - 60px)' }}>
-                                    {messages.map(message => (
+                                    {getAllMessages().map(message => (
                                         <div
                                             key={message._id}
-                                            className={`d-flex ${message.user_id._id == currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
+                                            className={`d-flex ${message.user_id._id === currentUser?._id ? 'justify-content-end' : 'justify-content-start'}`}
                                         >
                                             <div className={`max-w-75 message-box ${message.user_id._id === currentUser?._id ? 'bg-success text-white' : 'bg-dark border'} p-3 rounded-lg shadow-sm rounded mt-1`} style={{ minWidth: '200px' }}>
-                                                {message.sender?._id !== currentUser?._id && (
+                                                {message.user_id._id !== currentUser?._id && (
                                                     <small className="text-muted d-block">
                                                         {getSenderDisplayName(message)}
                                                     </small>
@@ -637,8 +630,19 @@ const ChatRoomPage: React.FC = () => {
                                         </div>
                                     ))}
 
+                                    {/* System messages from SSE */}
+                                    {sseMessages.filter((msg: any) => msg.type === 'system').map((msg: any) => (
+                                        <div key={msg.id} className="d-flex justify-content-center">
+                                            <div className="bg-light border p-2 rounded-lg shadow-sm">
+                                                <small className="text-muted">
+                                                    {msg.content}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    ))}
+
                                     {/* Typing indicator */}
-                                    {/*typingUsers.length > 0 && (
+                                    {typingUsers.length > 0 && (
                                         <div className="d-flex justify-content-start">
                                             <div className="bg-dark p-2 rounded-lg shadow-sm">
                                                 <small className="text-muted">
@@ -646,7 +650,7 @@ const ChatRoomPage: React.FC = () => {
                                                 </small>
                                             </div>
                                         </div>
-                                    )*/}
+                                    )}
 
                                     <div ref={messagesEndRef} />
                                 </div>
@@ -655,23 +659,26 @@ const ChatRoomPage: React.FC = () => {
                             {/* Message Input */}
                             <div className="chat-input-section p-3">
                                 <Form onSubmit={handleSendMessage}>
-                                    <InputGroup >
+                                    <InputGroup>
                                         <Button disabled variant="outline-secondary">
                                             <Paperclip size={16} />
                                         </Button>
                                         <Form.Control
                                             type="text"
-                                            placeholder={isVercel ? 'Real-time features are disabled on Vercel. Please run locally for full functionality.' : 'Type your message...'}
+                                            placeholder={!isConnected ? 'Connecting to chat...' : 'Type your message...'}
                                             value={newMessage}
                                             onChange={(e) => handleTyping(e.target.value)}
-                                            disabled={isVercel}
-                                            title='Real-time features are disabled on Vercel. Please run locally for full functionality.'
+                                            disabled={!isConnected}
                                         />
                                         <Button disabled variant="outline-secondary">
                                             <Smile size={20} />
                                         </Button>
-                                        <Button type="submit" variant="primary" className='send-button' disabled={isVercel}
-                                            title='Real-time features are disabled on Vercel. Please run locally for full functionality.'>
+                                        <Button
+                                            type="submit"
+                                            variant="primary"
+                                            className='send-button'
+                                            disabled={!isConnected || !newMessage.trim()}
+                                        >
                                             <Send size={20} />
                                         </Button>
                                     </InputGroup>
@@ -683,9 +690,9 @@ const ChatRoomPage: React.FC = () => {
                             <div className="text-center">
                                 <Users size={48} className="mb-3" />
                                 <h5>Select a room to start chatting</h5>
-                                {isVercel && (
-                                    <div className="text-danger mt-2">
-                                        <h4>Note: Real-time features are disabled on Vercel. Please run locally for full functionality.</h4>
+                                {!isConnected && (
+                                    <div className="text-warning mt-2">
+                                        <h6>Establishing connection...</h6>
                                     </div>
                                 )}
                             </div>
