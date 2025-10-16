@@ -57,7 +57,7 @@ export class SSEService {
     constructor(options: SSEConnectionOptions) {
         this.userId = options.userId;
         this.username = options.username;
-        this.baseUrl = options.baseUrl || '/api/sse';
+        this.baseUrl = options.baseUrl + '/api/sse';
     }
 
     // Connect to SSE stream
