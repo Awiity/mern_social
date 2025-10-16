@@ -227,18 +227,6 @@ class SSEManager {
 
         client.roomId = undefined;
 
-        // Notify room about user leaving
-        this.broadcastToRoom(roomId, {
-            type: 'user-left',
-            data: {
-                message: `${client.username} left the room`,
-                username: client.username,
-                userId: client.userId,
-                roomId: roomId
-            },
-            timestamp: new Date()
-        });
-
         // Send updated user list to room
         this.broadcastRoomUsers(roomId);
 

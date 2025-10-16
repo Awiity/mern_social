@@ -64,7 +64,7 @@ export class SSEService {
     async connect(): Promise<boolean> {
         try {
             const url = `${this.baseUrl}/connect?userId=${encodeURIComponent(this.userId)}&username=${encodeURIComponent(this.username)}`;
-            console.log(`Connecting to SSE at ${url}`);
+            //console.log(`Connecting to SSE at ${url}`);
 
             this.eventSource = new EventSource(url);
 
@@ -79,7 +79,7 @@ export class SSEService {
                     clearTimeout(timeout);
                     this.isConnected = true;
                     this.reconnectAttempts = 0;
-                    console.log('SSE connected successfully');
+                    //console.log('SSE connected successfully');
                     resolve(true);
                 });
 
@@ -102,48 +102,48 @@ export class SSEService {
 
         // Connection events
         this.eventSource.addEventListener('connection', (event) => {
-            console.log("WWWWWWWWWWWWWWWWWWWWWWWWWWWW", JSON.parse(event.data))
+            //console.log("WWWWWWWWWWWWWWWWWWWWWWWWWWWW", JSON.parse(event.data))
             const data = JSON.parse(event.data);
-            console.log('Connected to SSE:', data);
+            //console.log('Connected to SSE:', data);
             this.eventHandlers.onConnection?.(data);
         });
 
         // Message events
         this.eventSource.addEventListener('message', (event) => {
-            console.log('Message event received:', event);
+            //console.log('Message event received:', event);
             const data = JSON.parse(event.data);
-            console.log('New message:', data);
+            //console.log('New message:', data);
             this.eventHandlers.onMessage?.(data);
         });
 
         // User joined events
         this.eventSource.addEventListener('user-joined', (event) => {
-            console.log('User joined event received:', event);
+            //console.log('User joined event received:', event);
             const data = JSON.parse(event.data);
-            console.log('User joined:', data);
+            //console.log('User joined:', data);
             this.eventHandlers.onUserJoined?.(data);
         });
 
         // User left events
         this.eventSource.addEventListener('user-left', (event) => {
-            console.log('User left event received:', event);
+            //console.log('User left event received:', event);
             const data = JSON.parse(event.data);
-            console.log('User left:', data);
+            //console.log('User left:', data);
             this.eventHandlers.onUserLeft?.(data);
         });
 
         // Typing events
         this.eventSource.addEventListener('typing', (event) => {
-            console.log('Typing event received:', event);
+            //console.log('Typing event received:', event);
             const data = JSON.parse(event.data);
             this.eventHandlers.onTyping?.(data);
         });
 
         // Room users update events
         this.eventSource.addEventListener('room-users', (event) => {
-            console.log('Room users update event received:', event);
+            //console.log('Room users update event received:', event);
             const data = JSON.parse(event.data);
-            console.log('Room users updated:', data);
+            //console.log('Room users updated:', data);
             this.eventHandlers.onRoomUsers?.(data);
         });
 
@@ -157,7 +157,7 @@ export class SSEService {
 
         // Heartbeat events
         this.eventSource.addEventListener('heartbeat', (event) => {
-            console.log('Heartbeat received', event);
+            //console.log('Heartbeat received', event);
             const data = JSON.parse(event.data);
             this.eventHandlers.onHeartbeat?.(data);
         });
@@ -177,7 +177,7 @@ export class SSEService {
             this.reconnectAttempts++;
             const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
-            console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
+            //console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
 
             setTimeout(() => {
                 this.disconnect();
@@ -215,7 +215,7 @@ export class SSEService {
 
             if (result.success) {
                 this.currentRoomId = roomId;
-                console.log(`Successfully joined room: ${roomName}`);
+                //console.log(`Successfully joined room: ${roomName}`);
                 return true;
             } else {
                 console.error('Failed to join room:', result.message);
@@ -249,7 +249,7 @@ export class SSEService {
             const result = await response.json();
 
             if (result.success) {
-                console.log('Successfully left room');
+                //console.log('Successfully left room');
                 this.currentRoomId = null;
                 return true;
             } else {
@@ -351,7 +351,7 @@ export class SSEService {
             this.eventSource = null;
             this.isConnected = false;
             this.currentRoomId = null;
-            console.log('SSE connection closed ...');
+            //console.log('SSE connection closed ...');
         }
     }
 

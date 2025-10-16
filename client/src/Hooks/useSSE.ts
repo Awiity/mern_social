@@ -65,14 +65,14 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
     useEffect(() => {
         const handlers: EventHandlers = {
             onConnection: (data) => {
-                console.log('SSE Connected:', data);
+                ////console.log('SSE Connected:', data);
                 setIsConnected(true);
                 setIsConnecting(false);
                 setError(null);
             },
 
             onMessage: (data) => {
-                console.log('New message received:', data.data);
+                ////console.log('New message received:', data.data);
                 setMessages(prev => [...prev, {
                     ...data.data,
                     id: Date.now() + Math.random(),
@@ -81,31 +81,16 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             },
 
             onUserJoined: (data) => {
-                console.log('User joined:', data);
-                // Add a system message
-                setMessages(prev => [...prev, {
-                    id: Date.now() + Math.random(),
-                    type: 'system',
-                    content: `${data.username} joined the room`,
-                    timestamp: new Date(data.timestamp),
-                    username: 'System'
-                }]);
+                //console.log('User joined:', data);
             },
 
             onUserLeft: (data) => {
-                console.log('User left:', data);
-                // Add a system message
-                setMessages(prev => [...prev, {
-                    id: Date.now() + Math.random(),
-                    type: 'system',
-                    content: `${data.username} left the room`,
-                    timestamp: new Date(data.timestamp),
-                    username: 'System'
-                }]);
+                //console.log('User left:', data);
+
             },
 
             onRoomUsers: (data) => {
-                console.log('Room users updated:', data);
+                //console.log('Room users updated:', data);
                 setRoomUsers(data.users || []);
                 setRoomInfo(prev => prev ? { ...prev, users: data.users, userCount: data.userCount } : null);
             },

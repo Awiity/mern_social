@@ -128,6 +128,7 @@ const ChatRoomPage: React.FC = () => {
         if (isAuthenticated && currentUser && !isConnected && !isConnecting) {
             connect();
         }
+        console.log(currentUser);
 
         loadAllUsers();
     }, [isAuthenticated, currentUser, isConnected, isConnecting, connect]);
@@ -220,6 +221,7 @@ const ChatRoomPage: React.FC = () => {
 
     // Handle room change
     const handleRoomChange = async (room: Room) => {
+        console.log("ROOM:", room);
         if (currentUser) {
             // Leave current room via SSE
             if (currentRoom && currentRoomId) {
@@ -485,9 +487,11 @@ const ChatRoomPage: React.FC = () => {
                                             <div className="d-flex justify-content-between align-items-center">
                                                 <strong className="text-truncate">
                                                     {room.type !== 'private' ? room.name :
-                                                        room.users?.[0]?.username === currentUser?.username ?
-                                                            room.users?.[1]?.username :
-                                                            room.users?.[0]?.username}
+                                                        room.users && room.users.length > 0 ?
+                                                            (currentUser?.username === room.users[0].username ?
+                                                                (room.users.length > 1 ? room.users[1].username : 'No Chat Partner')
+                                                                : room.users[0].username)
+                                                            : 'Private Room'}
                                                 </strong>
                                                 <small className="text-muted last-activity">
                                                     {room.lastActivity && new Date(room.lastActivity).toLocaleTimeString()}

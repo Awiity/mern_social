@@ -22,7 +22,7 @@ export async function postNew(formData: FormData): Promise<any> {
                 'Content-Type': 'multipart/form-data',
             },
         });
-    console.log('res', response);
+    //console.log('res', response);
     return response;
 };
 

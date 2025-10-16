@@ -12,7 +12,7 @@ export class ChatService {
     }
 
     async createRoom(roomData: any) {
-        console.log('Creating room with data:', roomData);
+        //console.log('Creating room with data:', roomData);
         const response = await fetch(`${this.baseUrl}/rooms`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
