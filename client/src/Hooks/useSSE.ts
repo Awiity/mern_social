@@ -64,7 +64,7 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
     // Setup event handlers
     useEffect(() => {
         const handlers: EventHandlers = {
-            onConnection: (data) => {
+            onConnection: () => {
                 ////console.log('SSE Connected:', data);
                 setIsConnected(true);
                 setIsConnecting(false);
@@ -80,14 +80,14 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
                 }]);
             },
 
-            onUserJoined: (data) => {
-                //console.log('User joined:', data);
-            },
+            // onUserJoined: (data) => {
+            //     //console.log('User joined:', data);
+            // },
 
-            onUserLeft: (data) => {
-                //console.log('User left:', data);
+            // onUserLeft: (data) => {
+            //     //console.log('User left:', data);
 
-            },
+            // },
 
             onRoomUsers: (data) => {
                 //console.log('Room users updated:', data);
