@@ -93,8 +93,8 @@ const ChatRoomPage: React.FC = () => {
         username: currentUser?.username || '',
         autoConnect: true,
         baseUrl: process.env.NODE_ENV === 'production'
-            ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app' :
-            process.env.DEV_API_URL || 'http://localhost:4000/api/sse'
+            ? process.env.BASE_URL || 'https://mern-social-two-gamma.vercel.app' :
+            process.env.DEV_API_URL || 'http://localhost:4000'
     });
 
     // State
@@ -116,7 +116,7 @@ const ChatRoomPage: React.FC = () => {
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
 
     const API_BASE_URL = process.env.NODE_ENV === 'production'
-        ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+        ? process.env.BASE_URL || 'https://mern-social-two-gamma.vercel.app'
         : process.env.DEV_API_URL || 'http://localhost:4000';
 
     // Refs

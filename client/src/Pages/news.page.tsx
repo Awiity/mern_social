@@ -8,7 +8,7 @@ import '../styles/news.css';
 import { useAuth } from "../Context/auth.context";
 
 const API_BASE_URL = process.env.NODE_ENV === 'production'
-    ? process.env.BASE_URL || 'https://opalsocialbe.vercel.app'
+    ? process.env.BASE_URL || 'https://mern-social-two-gamma.vercel.app'
     : process.env.DEV_API_URL || 'http://localhost:4000';
 
 interface IPostData {

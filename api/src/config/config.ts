@@ -27,7 +27,7 @@ const config: Config = {
     cloudinary_secret: process.env.CLOUDINARY_SECRET!,
     clodinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
     node_env: process.env.NODE_ENV,
-    client_url: process.env.CLIENT_URL || 'opal-social-mocha.vercel.app'
+    client_url: process.env.CLIENT_URL || 'https://the-opal.vercel.app'
 };
 
 export default config;

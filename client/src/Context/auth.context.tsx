@@ -5,7 +5,7 @@ import { ILoginCred } from "../Network/user.api";
 axios.defaults.withCredentials = true;
 
 const API_BASE_URL = process.env.NODE_ENV === 'production'
-    ? 'https://opalsocialbe.vercel.app'
+    ? 'https://mern-social-two-gamma.vercel.app'
     : 'http://localhost:4000';
 
 export interface User {
