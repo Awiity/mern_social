@@ -10,69 +10,57 @@ export interface UseSSEOptions {
 }
 
 export interface UseSSEReturn {
-    // Connection state
     isConnected: boolean;
     isConnecting: boolean;
     error: string | null;
-
-    // Current room state
     currentRoomId: string | null;
     roomUsers: any[];
     roomInfo: RoomInfo | null;
-
-    // Typing indicators
     typingUsers: string[];
-
-    // Messages
     messages: any[];
-
-    // Actions
     connect: () => Promise<boolean>;
     disconnect: () => void;
     joinRoom: (roomId: string, roomName: string) => Promise<boolean>;
     leaveRoom: () => Promise<boolean>;
     sendTyping: (isTyping: boolean) => Promise<boolean>;
     clearMessages: () => void;
-
-    // Service instance (for advanced usage)
     sseService: SSEService | null;
 }
 
 export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
     const { userId, username, baseUrl, autoConnect = true } = options;
 
-    // Service instance
-    const [sseService] = useState(() => new SSEService({ userId, username, baseUrl }));
+    // Use ref to persist service instance across renders
+    const sseServiceRef = useRef<SSEService | null>(null);
 
-    // Connection state
+    // Initialize service only once
+    if (!sseServiceRef.current) {
+        sseServiceRef.current = new SSEService({ userId, username, baseUrl });
+    }
+
     const [isConnected, setIsConnected] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    // Room state
     const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
     const [roomUsers, setRoomUsers] = useState<any[]>([]);
     const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
-
-    // Typing state
     const [typingUsers, setTypingUsers] = useState<string[]>([]);
-    const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
-
-    // Messages
     const [messages, setMessages] = useState<any[]>([]);
 
-    // Setup event handlers
-    useEffect(() => {
+    const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
+    const hasConnectedRef = useRef(false); // Track if we've ever connected
+
+    // Setup event handlers - memoized to prevent recreation
+    const setupHandlers = useCallback(() => {
         const handlers: EventHandlers = {
             onConnection: () => {
-                ////console.log('SSE Connected:', data);
                 setIsConnected(true);
                 setIsConnecting(false);
                 setError(null);
+                hasConnectedRef.current = true;
             },
 
             onMessage: (data) => {
-                ////console.log('New message received:', data.data);
                 setMessages(prev => [...prev, {
                     ...data.data,
                     id: Date.now() + Math.random(),
@@ -80,53 +68,41 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
                 }]);
             },
 
-            // onUserJoined: (data) => {
-            //     //console.log('User joined:', data);
-            // },
-
-            // onUserLeft: (data) => {
-            //     //console.log('User left:', data);
-
-            // },
-
             onRoomUsers: (data) => {
-                //console.log('Room users updated:', data);
                 setRoomUsers(data.users || []);
                 setRoomInfo(prev => prev ? { ...prev, users: data.users, userCount: data.userCount } : null);
             },
 
             onTyping: (data) => {
-                const { username, userId: typingUserId, isTyping } = data;
+                const { username: typingUsername, userId: typingUserId, isTyping } = data;
 
-                if (typingUserId === userId) return; // Ignore own typing
+                if (typingUserId === userId) return;
 
                 if (isTyping) {
                     setTypingUsers(prev => {
-                        if (!prev.includes(username)) {
-                            return [...prev, username];
+                        if (!prev.includes(typingUsername)) {
+                            return [...prev, typingUsername];
                         }
                         return prev;
                     });
 
-                    // Clear existing timeout for this user
-                    const existingTimeout = typingTimeouts.current.get(username);
+                    const existingTimeout = typingTimeouts.current.get(typingUsername);
                     if (existingTimeout) {
                         clearTimeout(existingTimeout);
                     }
 
-                    // Set new timeout to remove typing indicator
                     const timeout = setTimeout(() => {
-                        setTypingUsers(prev => prev.filter(u => u !== username));
-                        typingTimeouts.current.delete(username);
+                        setTypingUsers(prev => prev.filter(u => u !== typingUsername));
+                        typingTimeouts.current.delete(typingUsername);
                     }, 3000);
 
-                    typingTimeouts.current.set(username, timeout);
+                    typingTimeouts.current.set(typingUsername, timeout);
                 } else {
-                    setTypingUsers(prev => prev.filter(u => u !== username));
-                    const timeout = typingTimeouts.current.get(username);
+                    setTypingUsers(prev => prev.filter(u => u !== typingUsername));
+                    const timeout = typingTimeouts.current.get(typingUsername);
                     if (timeout) {
                         clearTimeout(timeout);
-                        typingTimeouts.current.delete(username);
+                        typingTimeouts.current.delete(typingUsername);
                     }
                 }
             },
@@ -139,33 +115,42 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             },
 
             onHeartbeat: () => {
-                // Update last seen time or connection status
                 setIsConnected(true);
             }
         };
 
-        sseService.setEventHandlers(handlers);
+        sseServiceRef.current?.setEventHandlers(handlers);
+    }, [userId]);
+
+    // Setup handlers once on mount
+    useEffect(() => {
+        setupHandlers();
 
         return () => {
-            // Clear all typing timeouts on cleanup
             typingTimeouts.current.forEach(timeout => clearTimeout(timeout));
             typingTimeouts.current.clear();
         };
-    }, [sseService, userId]);
+    }, [setupHandlers]);
 
-    // Connect function
+    // Connect function - stable reference
     const connect = useCallback(async (): Promise<boolean> => {
-        if (isConnected || isConnecting) return true;
+        if (!sseServiceRef.current) return false;
+
+        // Prevent multiple simultaneous connection attempts
+        if (isConnecting || isConnected) {
+            return isConnected;
+        }
 
         setIsConnecting(true);
         setError(null);
 
         try {
-            const success = await sseService.connect();
+            const success = await sseServiceRef.current.connect();
             if (success) {
                 setIsConnected(true);
+            } else {
+                setIsConnecting(false);
             }
-            setIsConnecting(false);
             return success;
         } catch (error) {
             console.error('Connection failed:', error);
@@ -174,11 +159,13 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             setIsConnected(false);
             return false;
         }
-    }, [sseService, isConnected, isConnecting]);
+    }, [isConnecting, isConnected]);
 
-    // Disconnect function
+    // Disconnect function - stable reference
     const disconnect = useCallback(() => {
-        sseService.disconnect();
+        if (!sseServiceRef.current) return;
+
+        sseServiceRef.current.disconnect();
         setIsConnected(false);
         setIsConnecting(false);
         setCurrentRoomId(null);
@@ -187,24 +174,22 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
         setTypingUsers([]);
         setMessages([]);
         setError(null);
-    }, [sseService]);
+    }, []);
 
-    // Join room function
     const joinRoom = useCallback(async (roomId: string, roomName: string): Promise<boolean> => {
-        if (!isConnected) {
+        if (!sseServiceRef.current || !isConnected) {
             setError('Not connected to SSE');
             return false;
         }
 
         try {
-            const success = await sseService.joinRoom(roomId, roomName);
+            const success = await sseServiceRef.current.joinRoom(roomId, roomName);
             if (success) {
                 setCurrentRoomId(roomId);
-                setMessages([]); // Clear messages when joining new room
+                setMessages([]);
                 setTypingUsers([]);
 
-                // Fetch room info
-                const info = await sseService.getRoomInfo(roomId);
+                const info = await sseServiceRef.current.getRoomInfo(roomId);
                 setRoomInfo(info);
             }
             return success;
@@ -213,14 +198,13 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             setError(error instanceof Error ? error.message : 'Failed to join room');
             return false;
         }
-    }, [sseService, isConnected]);
+    }, [isConnected]);
 
-    // Leave room function
     const leaveRoom = useCallback(async (): Promise<boolean> => {
-        if (!currentRoomId) return true;
+        if (!sseServiceRef.current || !currentRoomId) return true;
 
         try {
-            const success = await sseService.leaveRoom();
+            const success = await sseServiceRef.current.leaveRoom();
             if (success) {
                 setCurrentRoomId(null);
                 setRoomUsers([]);
@@ -234,71 +218,70 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             setError(error instanceof Error ? error.message : 'Failed to leave room');
             return false;
         }
-    }, [sseService, currentRoomId]);
+    }, [currentRoomId]);
 
-    // Send typing function
     const sendTyping = useCallback(async (isTyping: boolean): Promise<boolean> => {
-        if (!isConnected || !currentRoomId) return false;
+        if (!sseServiceRef.current || !isConnected || !currentRoomId) return false;
 
         try {
-            return await sseService.sendTyping(isTyping);
+            return await sseServiceRef.current.sendTyping(isTyping);
         } catch (error) {
             console.error('Failed to send typing indicator:', error);
             return false;
         }
-    }, [sseService, isConnected, currentRoomId]);
+    }, [isConnected, currentRoomId]);
 
-    // Clear messages function
     const clearMessages = useCallback(() => {
         setMessages([]);
     }, []);
 
-    // Auto-connect on mount
+    // Auto-connect effect - FIXED VERSION
     useEffect(() => {
-        if (autoConnect && !isConnected && !isConnecting) {
-            connect();
-        }
+        let mounted = true;
 
+        const initConnection = async () => {
+            // Only connect if autoConnect is true, we haven't connected yet, and component is mounted
+            if (autoConnect && !hasConnectedRef.current && mounted) {
+                await connect();
+            }
+        };
+
+        initConnection();
+
+        // Cleanup function
         return () => {
-            if (autoConnect) {
+            mounted = false;
+            // Only disconnect if autoConnect was true
+            if (autoConnect && sseServiceRef.current) {
                 disconnect();
             }
         };
-    }, [autoConnect]); // Only run on mount/unmount
+    }, []); // Empty dependency array - truly only run once
 
     // Update current room ID from service
     useEffect(() => {
-        const roomId = sseService.getCurrentRoomId();
-        setCurrentRoomId(roomId);
-    }, [sseService]);
+        if (sseServiceRef.current) {
+            const roomId = sseServiceRef.current.getCurrentRoomId();
+            setCurrentRoomId(roomId);
+        }
+    }, []);
 
     return {
-        // Connection state
         isConnected,
         isConnecting,
         error,
-
-        // Room state
         currentRoomId,
         roomUsers,
         roomInfo,
-
-        // Typing state
         typingUsers,
-
-        // Messages
         messages,
-
-        // Actions
         connect,
         disconnect,
         joinRoom,
         leaveRoom,
         sendTyping,
         clearMessages,
-
-        // Service instance
-        sseService
+        sseService: sseServiceRef.current
     };
 };
 

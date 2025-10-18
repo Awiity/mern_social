@@ -50,9 +50,11 @@ export class SSEService {
     private currentRoomId: string | null = null;
     private eventHandlers: EventHandlers = {};
     private reconnectAttempts = 0;
-    private maxReconnectAttempts = 3;
+    private maxReconnectAttempts = process.env.NODE_ENV === 'production' ? 1 : 3;
     private reconnectDelay = 1000;
     private isConnected = false;
+
+
 
     constructor(options: SSEConnectionOptions) {
         this.userId = options.userId;

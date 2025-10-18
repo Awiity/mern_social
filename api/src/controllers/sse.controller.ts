@@ -35,6 +35,7 @@ class SSEManager {
     private rooms: Map<string, RoomData> = new Map();
     private eventEmitter: EventEmitter = new EventEmitter();
     private cleanupInterval: NodeJS.Timeout;
+    private connectionAttempts: Map<string, number> = new Map();
 
     constructor() {
         // Cleanup inactive connections every 2 minutes
@@ -52,6 +53,17 @@ class SSEManager {
 
     // Add client connection
     addClient(clientId: string, userId: string, username: string, response: Response): void {
+        // FIX to rate issue
+        const attempts = this.connectionAttempts.get(userId) || 0;
+        if (attempts > 5) {
+            response.status(429).json({error: "Too many connection attempts."})
+            return;
+        }
+        this.connectionAttempts.set(userId, attempts + 1);
+
+        // Clearing after successful connection
+        setTimeout(() => this.connectionAttempts.delete(userId), 60000);
+
         // Remove existing client with same userId to prevent duplicates
 
         const client: SSEClient = {
@@ -97,7 +109,7 @@ class SSEManager {
                     this.removeClient(clientId);
                 }
             }
-        }, 30000); // Send heartbeat every 30 seconds
+        }, 60000); // Send heartbeat every 30 -> 60 changed to fix rate limit issues.
 
         // Handle client disconnect
         response.on('close', () => {
