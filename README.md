@@ -3,8 +3,6 @@
 A full-stack social media application built with **MongoDB**, **Express**, **React**, and **Node.js** (MERN).  
 Includes real-time chat, image uploads, user roles, and more.
 
-[Live Demo](https://mern-social-tau.vercel.app)  
-(If demo is up; remove if not)  
 
 ---
 
