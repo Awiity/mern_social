@@ -22,11 +22,11 @@ export class RoomController {
                 lastActivity: validatedData.lastActivity || new Date()
             });
             room.users?.forEach(user => {
-                console.log('User in room:', user)
+                // console.log('User in room:', user)
             })
 
             const savedRoom = await room.save();
-            console.log('Room created successfully:', savedRoom);
+            // console.log('Room created successfully:', savedRoom);
             res.status(201).json({
                 success: true,
                 message: 'Room created successfully',

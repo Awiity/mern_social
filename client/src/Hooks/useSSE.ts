@@ -50,16 +50,17 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
     const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
     const hasConnectedRef = useRef(false); // Track if we've ever connected
 
-    // Setup event handlers - memoized to prevent recreation
-    const setupHandlers = useCallback(() => {
-        const handlers: EventHandlers = {
+    const handlersRef = useRef<EventHandlers>({});
+
+    // Initialize handlers once
+    useEffect(() => {
+        handlersRef.current = {
             onConnection: () => {
                 setIsConnected(true);
                 setIsConnecting(false);
                 setError(null);
                 hasConnectedRef.current = true;
             },
-
             onMessage: (data) => {
                 setMessages(prev => [...prev, {
                     ...data.data,
@@ -67,16 +68,15 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
                     timestamp: new Date(data.timestamp)
                 }]);
             },
-
             onRoomUsers: (data) => {
                 setRoomUsers(data.users || []);
                 setRoomInfo(prev => prev ? { ...prev, users: data.users, userCount: data.userCount } : null);
             },
-
             onTyping: (data) => {
                 const { username: typingUsername, userId: typingUserId, isTyping } = data;
 
-                if (typingUserId === userId) return;
+                // Use ref for current userId to avoid stale closure
+                if (typingUserId === userIdRef.current) return;
 
                 if (isTyping) {
                     setTypingUsers(prev => {
@@ -106,38 +106,31 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
                     }
                 }
             },
-
             onError: (error) => {
                 console.error('SSE Error:', error);
                 setError(error.message || 'Connection error');
                 setIsConnected(false);
                 setIsConnecting(false);
             },
-
             onHeartbeat: () => {
                 setIsConnected(true);
             }
         };
 
-        sseServiceRef.current?.setEventHandlers(handlers);
-    }, [userId]);
+        sseServiceRef.current?.setEventHandlers(handlersRef.current);
+    }, []); // Empty dependencies - setup once
 
-    // Setup handlers once on mount
+    const userIdRef = useRef(userId);
     useEffect(() => {
-        setupHandlers();
-
-        return () => {
-            typingTimeouts.current.forEach(timeout => clearTimeout(timeout));
-            typingTimeouts.current.clear();
-        };
-    }, [setupHandlers]);
+        userIdRef.current = userId;
+    }, [userId]);
 
     // Connect function - stable reference
     const connect = useCallback(async (): Promise<boolean> => {
         if (!sseServiceRef.current) return false;
 
         // Prevent multiple simultaneous connection attempts
-        if (isConnecting || isConnected) {
+        if (isConnecting || isConnected || sseServiceRef.current.isConnectionOpen()) {
             return isConnected;
         }
 
@@ -235,28 +228,22 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
         setMessages([]);
     }, []);
 
-    // Auto-connect effect - FIXED VERSION
     useEffect(() => {
         let mounted = true;
-
         const initConnection = async () => {
-            // Only connect if autoConnect is true, we haven't connected yet, and component is mounted
             if (autoConnect && !hasConnectedRef.current && mounted) {
                 await connect();
             }
         };
-
         initConnection();
 
-        // Cleanup function
         return () => {
             mounted = false;
-            // Only disconnect if autoConnect was true
-            if (autoConnect && sseServiceRef.current) {
+            if (sseServiceRef.current) {
                 disconnect();
             }
         };
-    }, []); // Empty dependency array - truly only run once
+    }, [autoConnect, connect, disconnect]);
 
     // Update current room ID from service
     useEffect(() => {

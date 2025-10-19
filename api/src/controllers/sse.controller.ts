@@ -53,18 +53,16 @@ class SSEManager {
 
     // Add client connection
     addClient(clientId: string, userId: string, username: string, response: Response): void {
-        // FIX to rate issue
+
         const attempts = this.connectionAttempts.get(userId) || 0;
-        if (attempts > 5) {
-            response.status(429).json({error: "Too many connection attempts."})
+        if (attempts > 25) {
+            response.status(429).json({ error: "Too many connection attempts." });
             return;
         }
         this.connectionAttempts.set(userId, attempts + 1);
-
-        // Clearing after successful connection
         setTimeout(() => this.connectionAttempts.delete(userId), 60000);
 
-        // Remove existing client with same userId to prevent duplicates
+        this.removeClientByUserId(userId);
 
         const client: SSEClient = {
             id: clientId,
@@ -113,7 +111,7 @@ class SSEManager {
 
         // Handle client disconnect
         response.on('close', () => {
-            console.log(`Client ${clientId} disconnected`);
+            // console.log(`Client ${clientId} disconnected`);
             this.removeClient(clientId);
         });
 
@@ -122,7 +120,7 @@ class SSEManager {
             this.removeClient(clientId);
         });
 
-        console.log(`Client ${clientId} (${username}) connected`);
+        // console.log(`Client ${clientId} (${username}) connected`);
     }
 
     // Remove client by userId (for preventing duplicates)
@@ -159,7 +157,7 @@ class SSEManager {
             }
 
             this.clients.delete(clientId);
-            console.log(`Client ${clientId} removed`);
+            // console.log(`Client ${clientId} removed`);
         }
     }
 
@@ -190,7 +188,7 @@ class SSEManager {
 
         // Check if user is already in room
         if (room.users.has(client.userId)) {
-            console.log(`User ${client.username} already in room ${roomName}`);
+            // console.log(`User ${client.username} already in room ${roomName}`);
             return true;
         }
 
@@ -222,7 +220,7 @@ class SSEManager {
         // Send updated user list to room
         this.broadcastRoomUsers(roomId);
 
-        console.log(`User ${client.username} joined room ${roomName}`);
+        // console.log(`User ${client.username} joined room ${roomName}`);
         return true;
     }
 
@@ -245,10 +243,10 @@ class SSEManager {
         // Remove room if empty
         if (room.users.size === 0) {
             this.rooms.delete(roomId);
-            console.log(`Room ${roomId} deleted (empty)`);
+            // console.log(`Room ${roomId} deleted (empty)`);
         }
 
-        console.log(`User ${client.username} left room ${roomId}`);
+        // console.log(`User ${client.username} left room ${roomId}`);
         return true;
     }
 
@@ -416,12 +414,12 @@ class SSEManager {
         });
 
         clientsToRemove.forEach(clientId => {
-            console.log(`Cleaning up inactive client: ${clientId}`);
+            // console.log(`Cleaning up inactive client: ${clientId}`);
             this.removeClient(clientId);
         });
 
         if (clientsToRemove.length > 0) {
-            console.log(`Cleaned up ${clientsToRemove.length} inactive connections`);
+            // console.log(`Cleaned up ${clientsToRemove.length} inactive connections`);
         }
     }
 
@@ -436,11 +434,12 @@ class SSEManager {
             this.removeClient(clientId);
         });
 
-        console.log('SSE Manager shutdown complete');
+        // console.log('SSE Manager shutdown complete');
     }
 }
 
 export class SSEController {
+
     private sseManager: SSEManager;
 
     constructor() {
@@ -449,8 +448,9 @@ export class SSEController {
 
     // SSE connection endpoint
     connect = (req: Request, res: Response): void => {
+        console.log('GET /api/connect');
         const { userId, username } = req.query;
-        console.log(`SSE connection request from userId: ${userId}, username: ${username}`);
+        // console.log(`SSE connection request from userId: ${userId}, username: ${username}`);
 
         if (!userId || !username) {
             res.status(400).json({

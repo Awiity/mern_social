@@ -54,7 +54,7 @@ export class CommentController {
     }
     async getCommentCountByPostId(req: Request, res: Response) {
         try {
-            console.log("Fetching comment count for post ID:", req.params);
+            // console.log("Fetching comment count for post ID:", req.params);
 
             const { postId: post_id } = req.params;
             if (!post_id) {
@@ -62,7 +62,7 @@ export class CommentController {
             }
 
             const count = await CommentModel.countDocuments({ post_id });
-            console.log("Comment count for post ID:", post_id, "is", count);
+            // console.log("Comment count for post ID:", post_id, "is", count);
             res.status(200).send(count);
         } catch (error) {
             console.error("Error fetching comment count:", error);

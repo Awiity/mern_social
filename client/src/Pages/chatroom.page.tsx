@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Container, Row, Col, Button, Form, Modal, ListGroup, Badge, InputGroup, Dropdown } from 'react-bootstrap';
 import { Send, Users, Plus, Search, Phone, Video, MoreVertical, Smile, Paperclip } from 'lucide-react';
 import { ChatService } from '../Services/chat.service';
 import { useAuth, User } from '../Context/auth.context';
-import '../styles/chatroom.css'; 
+import '../styles/chatroom.css';
 import { useSSE } from '../Hooks/useSSE';
 
 // Types aligned with your models
@@ -83,7 +83,6 @@ const ChatRoomPage: React.FC = () => {
         roomUsers,
         typingUsers,
         messages: sseMessages,
-        connect,
         joinRoom,
         leaveRoom,
         sendTyping,
@@ -124,17 +123,14 @@ const ChatRoomPage: React.FC = () => {
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize SSE connection
+
+
     useEffect(() => {
-        if (isAuthenticated && currentUser && !isConnected && !isConnecting) {
-            connect();
-        }
-        console.log(currentUser);
-
         loadAllUsers();
-    }, [isAuthenticated, currentUser, isConnected, isConnecting, connect]);
+    }, []);
 
-    // Load user's rooms
-    const loadRooms = async () => {
+    
+    const loadRooms = useCallback(async () => {
         if (!currentUser) return;
 
         try {
@@ -145,23 +141,23 @@ const ChatRoomPage: React.FC = () => {
             console.error('Error loading rooms:', error);
             setLoading(false);
         }
-    };
+    }, [currentUser]);
 
     // Load rooms on component mount
     useEffect(() => {
         if (isAuthenticated && currentUser) {
             loadRooms();
         }
-    }, [isAuthenticated, currentUser]);
+    }, [isAuthenticated, currentUser, loadRooms]);
 
     // Load messages for current room
-    const loadMessages = async (roomId: string, page = 1) => {
+    const loadMessages = useCallback(async (roomId: string, page = 1) => {
         try {
             const response: MessagesResponse = await (await chatService.getMessages(roomId, page)).json();
 
             if (page === 1) {
                 setMessages(response.data.messages || []);
-                clearMessages(); // Clear SSE messages when loading fresh
+                clearMessages();
             } else {
                 setMessages(prev => [...(response.data.messages || []), ...prev]);
             }
@@ -171,9 +167,9 @@ const ChatRoomPage: React.FC = () => {
         } catch (error) {
             console.error('Error loading messages:', error);
         }
-    };
+    }, [clearMessages]);
 
-    const loadAllUsers = async () => {
+    const loadAllUsers = useCallback(async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/users`);
             const users = await response.json();
@@ -181,16 +177,14 @@ const ChatRoomPage: React.FC = () => {
         } catch (error) {
             console.error('Error loading users:', error);
         }
-    };
+    }, [API_BASE_URL]);
 
     // Merge SSE messages with loaded messages
-    const getAllMessages = () => {
+    const getAllMessages = useCallback(() => {
         const combinedMessages = [...messages];
 
-        // Add SSE messages that aren't already in the messages array
         sseMessages.forEach((sseMsg: any) => {
             if (sseMsg.type !== 'system' && !combinedMessages.find(msg => msg._id === sseMsg.id)) {
-                // Convert SSE message format to Message format
                 const convertedMessage: Message = {
                     _id: sseMsg.id?.toString() || Date.now().toString(),
                     content: sseMsg.content,
@@ -208,11 +202,10 @@ const ChatRoomPage: React.FC = () => {
             }
         });
 
-        // Sort by timestamp
         return combinedMessages.sort((a, b) =>
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
-    };
+    }, [messages, sseMessages, currentRoom]);
 
     // Auto scroll to bottom
     useEffect(() => {
@@ -220,7 +213,7 @@ const ChatRoomPage: React.FC = () => {
     }, [messages, sseMessages]);
 
     // Handle room change
-    const handleRoomChange = async (room: Room) => {
+    const handleRoomChange = useCallback(async (room: Room) => {
         console.log("ROOM:", room);
         if (currentUser) {
             // Leave current room via SSE
@@ -236,20 +229,18 @@ const ChatRoomPage: React.FC = () => {
                 await loadMessages(room._id);
             } else {
                 console.error('Failed to join room via SSE');
-                // Fallback: still set the room and load messages
                 setCurrentRoom(room);
                 await loadMessages(room._id);
             }
         }
-    };
+    }, [currentUser, currentRoom, currentRoomId, leaveRoom, joinRoom, loadMessages]);
 
     // Handle message send
-    const handleSendMessage = async (e: React.FormEvent) => {
+    const handleSendMessage = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (newMessage.trim() && currentUser && currentRoom) {
             try {
-                // Send message via API (this will trigger SSE broadcast to all users)
                 const messageData = {
                     content: newMessage.trim(),
                     user_id: currentUser._id,
@@ -261,7 +252,6 @@ const ChatRoomPage: React.FC = () => {
                 setNewMessage('');
                 setIsTyping(false);
 
-                // Stop typing indicator
                 if (isConnected) {
                     sendTyping(false);
                 }
@@ -269,10 +259,10 @@ const ChatRoomPage: React.FC = () => {
                 console.error('Error sending message:', error);
             }
         }
-    };
+    }, [newMessage, currentUser, currentRoom, isConnected, sendTyping]);
 
     // Handle typing with SSE
-    const handleTyping = (value: string) => {
+    const handleTyping = useCallback((value: string) => {
         setNewMessage(value);
 
         if (isConnected && currentUser && currentRoom) {
@@ -290,10 +280,10 @@ const ChatRoomPage: React.FC = () => {
                 sendTyping(false);
             }, 1000);
         }
-    };
+    }, [isConnected, currentUser, currentRoom, isTyping, sendTyping]);
 
     // Handle create room
-    const handleCreateRoom = async () => {
+    const handleCreateRoom = useCallback(async () => {
         if (newRoomName.trim() && currentUser) {
             try {
                 const roomData = {
@@ -304,32 +294,33 @@ const ChatRoomPage: React.FC = () => {
                         return {
                             id: userId,
                             username: user?.username || 'Unknown',
-                            socketId: '' // Will be populated when user joins
+                            socketId: ''
                         };
                     }),
                     isActive: true
                 };
+
                 roomData.users.push({
                     id: currentUser._id,
                     username: currentUser.username,
-                    socketId: '' // Will be populated when user joins
+                    socketId: ''
                 });
+
                 const newRoom = await chatService.createRoom(roomData);
                 setRooms(prev => [...prev, newRoom]);
                 setNewRoomName('');
                 setSelectedUsers([]);
                 setShowCreateRoomModal(false);
 
-                // Join the newly created room
                 handleRoomChange(newRoom);
             } catch (error) {
                 console.error('Error creating room:', error);
             }
         }
-    };
+    }, [newRoomName, currentUser, roomType, selectedUsers, allUsers, handleRoomChange]);
 
     // Handle private chat
-    const handlePrivateChat = async (user: UserC) => {
+    const handlePrivateChat = useCallback(async (user: UserC) => {
         if (!currentUser) return;
 
         const existingPrivateRoom = rooms.find(room =>
@@ -353,7 +344,7 @@ const ChatRoomPage: React.FC = () => {
                 console.error('Error creating private room:', error);
             }
         }
-    };
+    }, [currentUser, rooms, handleRoomChange]);
 
     // Handle message search
     const handleMessageSearch = async () => {
@@ -378,13 +369,19 @@ const ChatRoomPage: React.FC = () => {
     };
 
     // Filter rooms based on search
-    const filteredRooms = rooms.filter(room =>
-        room.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredRooms = useMemo(() =>
+        rooms.filter(room =>
+            room.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+        [rooms, searchTerm]
     );
 
     // Filter users based on search
-    const filteredUsers = allUsers.filter(user =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredUsers = useMemo(() =>
+        allUsers.filter(user =>
+            user.username.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+        [allUsers, searchTerm]
     );
 
     // Get display name for user

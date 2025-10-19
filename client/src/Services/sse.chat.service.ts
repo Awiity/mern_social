@@ -53,6 +53,7 @@ export class SSEService {
     private maxReconnectAttempts = process.env.NODE_ENV === 'production' ? 1 : 3;
     private reconnectDelay = 1000;
     private isConnected = false;
+    private reconnectTimeout: NodeJS.Timeout | null = null;
 
 
 
@@ -62,49 +63,32 @@ export class SSEService {
         this.baseUrl = options.baseUrl + '/api/sse';
     }
 
-    // Connect to SSE stream
     async connect(): Promise<boolean> {
-        try {
-            const url = `${this.baseUrl}/connect?userId=${encodeURIComponent(this.userId)}&username=${encodeURIComponent(this.username)}`;
-            //console.log(`Connecting to SSE at ${url}`);
-
-            this.eventSource = new EventSource(url);
-
-            this.setupEventListeners();
-
-            return new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => {
-                    reject(new Error('Connection timeout'));
-                }, 10000);
-
-                this.eventSource!.addEventListener('connection', () => {
-                    clearTimeout(timeout);
-                    this.isConnected = true;
-                    this.reconnectAttempts = 0;
-                    //console.log('SSE connected successfully');
-                    resolve(true);
-                });
-
-                this.eventSource!.onerror = (error) => {
-                    clearTimeout(timeout);
-                    console.error('SSE connection error:', error);
-                    this.handleConnectionError();
-                    reject(error);
-                };
-            });
-        } catch (error) {
-            console.error('Failed to connect to SSE:', error);
-            throw error;
+        if (this.isConnected || this.eventSource?.readyState === EventSource.OPEN) {
+            return true;
         }
+
+        // Unique URL to disable native auto-reconnect
+        const url = `${this.baseUrl}/connect?userId=${encodeURIComponent(this.userId)}&username=${encodeURIComponent(this.username)}&t=${Date.now()}`;
+        this.eventSource = new EventSource(url);
+        this.setupEventListeners();
+
+        return new Promise<boolean>((resolve) => {
+            const onConnection = () => {
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+                console.log('SSE connected successfully');
+                resolve(true);
+            };
+            this.eventSource!.addEventListener('connection', onConnection, { once: true });
+            // No error listener here — handled in setupEventListeners
+        });
     }
 
-    // Setup event listeners for different message types
     private setupEventListeners(): void {
         if (!this.eventSource) return;
 
-        // Connection events
         this.eventSource.addEventListener('connection', (event) => {
-            //console.log("WWWWWWWWWWWWWWWWWWWWWWWWWWWW", JSON.parse(event.data))
             const data = JSON.parse(event.data);
             //console.log('Connected to SSE:', data);
             this.eventHandlers.onConnection?.(data);
@@ -169,6 +153,7 @@ export class SSEService {
             console.error('EventSource error:', error);
             this.handleConnectionError();
         };
+        
     }
 
     // Handle connection errors and implement reconnection logic
@@ -177,11 +162,15 @@ export class SSEService {
 
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
-            //console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
+            // Exponential backoff with jitter to avoid thundering herd
+            const baseDelay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+            const jitter = Math.random() * 1000; // Add up to 1 second jitter
+            const delay = Math.min(baseDelay + jitter, 30000); // Cap at 30 seconds
 
-            setTimeout(() => {
+            console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${Math.round(delay)}ms...`);
+
+            this.reconnectTimeout = setTimeout(() => {
                 this.disconnect();
                 this.connect().catch(error => {
                     console.error('Reconnection failed:', error);
@@ -190,6 +179,7 @@ export class SSEService {
         } else {
             console.error('Max reconnection attempts reached');
             this.eventHandlers.onError?.({ message: 'Connection lost and unable to reconnect' });
+            this.reconnectAttempts = 0; // Reset for future attempts
         }
     }
 
@@ -348,6 +338,10 @@ export class SSEService {
 
     // Disconnect from SSE
     disconnect(): void {
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
         if (this.eventSource) {
             this.eventSource.close();
             this.eventSource = null;

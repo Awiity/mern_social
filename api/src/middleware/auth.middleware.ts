@@ -26,21 +26,21 @@ export const authenticate = async (
     res: Response,
     next: NextFunction
 ) => {
-    console.log("=== AUTHENTICATE MIDDLEWARE ===");
-    console.log("Request URL:", req.url);
-    console.log("Request method:", req.method);
-    console.log("Request headers:", req.headers);
+    // console.log("=== AUTHENTICATE MIDDLEWARE ===");
+    // console.log("Request URL:", req.url);
+    // console.log("Request method:", req.method);
+    // console.log("Request headers:", req.headers);
     //console.log("Raw cookies:", req.headers.cookie);
 
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
 
-    console.log("Parsed cookies:", req.cookies);
-    console.log("Access Token:", accessToken ? `${accessToken.slice(0, 10)}...${accessToken.slice(-5)}` : 'NOT FOUND');
-    console.log("Refresh Token:", refreshToken ? `${refreshToken.slice(0, 10)}...${refreshToken.slice(-5)}` : 'NOT FOUND');
+    // console.log("Parsed cookies:", req.cookies);
+    // console.log("Access Token:", accessToken ? `${accessToken.slice(0, 10)}...${accessToken.slice(-5)}` : 'NOT FOUND');
+    // console.log("Refresh Token:", refreshToken ? `${refreshToken.slice(0, 10)}...${refreshToken.slice(-5)}` : 'NOT FOUND');
 
     if (!accessToken && !refreshToken) {
-        console.log("No tokens found, throwing 401");
+        // console.log("No tokens found, throwing 401");
         throw new ApiError(401, "Unauthorized (No tokens provided)");
     }
 
@@ -94,7 +94,7 @@ export const refreshTokenValidation = (
     if (!refreshToken) throw new ApiError(401, "Invalid token (no token provided auth.mid.rtv)")
     try {
         const decodedJWT = jwt.verify(refreshToken, config.jwt_refresh_secret) as jwt.JwtPayload;
-        console.log("rvt stuff")
+        // console.log("rvt stuff")
         req.userId = decodedJWT.userId;
         next();
     } catch (error) {
