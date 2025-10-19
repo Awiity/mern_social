@@ -7,7 +7,6 @@ import { useAuth, User } from '../Context/auth.context';
 import '../styles/chatroom.css';
 import { useSSE } from '../Hooks/useSSE';
 
-// Types aligned with your models
 interface UserC extends User {
     _id: string;
     username: string;
@@ -74,7 +73,6 @@ const ChatRoomPage: React.FC = () => {
     const { user: currentUser, isAuthenticated } = useAuth();
     const chatService = new ChatService();
 
-    // SSE Hook
     const {
         isConnected,
         isConnecting,
@@ -96,7 +94,6 @@ const ChatRoomPage: React.FC = () => {
             process.env.DEV_API_URL || 'http://localhost:4000'
     });
 
-    // State
     const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -118,11 +115,9 @@ const ChatRoomPage: React.FC = () => {
         ? process.env.BASE_URL || 'https://mern-social-two-gamma.vercel.app'
         : process.env.DEV_API_URL || 'http://localhost:4000';
 
-    // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Initialize SSE connection
 
 
     useEffect(() => {
@@ -143,14 +138,12 @@ const ChatRoomPage: React.FC = () => {
         }
     }, [currentUser]);
 
-    // Load rooms on component mount
     useEffect(() => {
         if (isAuthenticated && currentUser) {
             loadRooms();
         }
     }, [isAuthenticated, currentUser, loadRooms]);
 
-    // Load messages for current room
     const loadMessages = useCallback(async (roomId: string, page = 1) => {
         try {
             const response: MessagesResponse = await (await chatService.getMessages(roomId, page)).json();
@@ -179,7 +172,6 @@ const ChatRoomPage: React.FC = () => {
         }
     }, [API_BASE_URL]);
 
-    // Merge SSE messages with loaded messages
     const getAllMessages = useCallback(() => {
         const combinedMessages = [...messages];
 
@@ -207,21 +199,17 @@ const ChatRoomPage: React.FC = () => {
         );
     }, [messages, sseMessages, currentRoom]);
 
-    // Auto scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, sseMessages]);
 
-    // Handle room change
     const handleRoomChange = useCallback(async (room: Room) => {
         console.log("ROOM:", room);
         if (currentUser) {
-            // Leave current room via SSE
             if (currentRoom && currentRoomId) {
                 await leaveRoom();
             }
 
-            // Join new room via SSE
             const joinSuccess = await joinRoom(room._id, room.name);
 
             if (joinSuccess) {
@@ -235,7 +223,6 @@ const ChatRoomPage: React.FC = () => {
         }
     }, [currentUser, currentRoom, currentRoomId, leaveRoom, joinRoom, loadMessages]);
 
-    // Handle message send
     const handleSendMessage = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -261,7 +248,6 @@ const ChatRoomPage: React.FC = () => {
         }
     }, [newMessage, currentUser, currentRoom, isConnected, sendTyping]);
 
-    // Handle typing with SSE
     const handleTyping = useCallback((value: string) => {
         setNewMessage(value);
 
@@ -282,7 +268,6 @@ const ChatRoomPage: React.FC = () => {
         }
     }, [isConnected, currentUser, currentRoom, isTyping, sendTyping]);
 
-    // Handle create room
     const handleCreateRoom = useCallback(async () => {
         if (newRoomName.trim() && currentUser) {
             try {
@@ -319,7 +304,6 @@ const ChatRoomPage: React.FC = () => {
         }
     }, [newRoomName, currentUser, roomType, selectedUsers, allUsers, handleRoomChange]);
 
-    // Handle private chat
     const handlePrivateChat = useCallback(async (user: UserC) => {
         if (!currentUser) return;
 
@@ -346,7 +330,6 @@ const ChatRoomPage: React.FC = () => {
         }
     }, [currentUser, rooms, handleRoomChange]);
 
-    // Handle message search
     const handleMessageSearch = async () => {
         if (messageSearchQuery.trim() && currentRoom) {
             try {
@@ -356,19 +339,16 @@ const ChatRoomPage: React.FC = () => {
                 console.error('Error searching messages:', error);
             }
         } else if (currentRoom) {
-            // Reset to normal messages if search is cleared
             loadMessages(currentRoom._id);
         }
     };
 
-    // Load more messages (pagination)
     const loadMoreMessages = () => {
         if (currentRoom && hasMoreMessages) {
             loadMessages(currentRoom._id, currentPage + 1);
         }
     };
 
-    // Filter rooms based on search
     const filteredRooms = useMemo(() =>
         rooms.filter(room =>
             room.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -376,7 +356,6 @@ const ChatRoomPage: React.FC = () => {
         [rooms, searchTerm]
     );
 
-    // Filter users based on search
     const filteredUsers = useMemo(() =>
         allUsers.filter(user =>
             user.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -384,18 +363,15 @@ const ChatRoomPage: React.FC = () => {
         [allUsers, searchTerm]
     );
 
-    // Get display name for user
     const getDisplayName = (user: UserC): string => {
         return user.username;
     };
 
-    // Get sender display name for message
     const getSenderDisplayName = (message: Message): string => {
         if (message.user_id) return message.user_id.username;
         return "Unknown Sender";
     };
 
-    // Connection status indicator
     const getConnectionStatus = () => {
         if (isConnecting) return { text: 'Connecting...', color: 'warning' };
         if (isConnected) return { text: 'Connected', color: 'success' };

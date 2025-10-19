@@ -28,15 +28,13 @@ export function PostPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const { isAuthenticated } = useAuth(); // Assuming you have a useAuth hook for authentication
+    const { isAuthenticated } = useAuth(); 
 
-    // Fetch post data
     const { data: post, isLoading: postLoading, error: postError } = useFetch<IPostData>(
         `${API_BASE_URL}/api/posts/${id}`
     );
 
 
-    // Fetch comments
     const { data: comments, setData: setComments } = useFetch<Comment[]>(
         `${API_BASE_URL}/api/comments/post/${id}`
     );

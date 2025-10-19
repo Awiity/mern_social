@@ -60,7 +60,6 @@ export function UserPage() {
     const { data: posts, error: postError, isLoading: postsLoading } = useFetch<IPostData[]>(`${API_BASE_URL}/api/posts/user/${id}`);
 
 
-    // Fetch user profile data
     const { data: userProfile, isLoading, error, reload } = useFetch<UserProfile>(
         `${API_BASE_URL}/api/users/${id}`
     );
@@ -94,7 +93,6 @@ export function UserPage() {
             const file = e.target.files[0];
             setEditData({ ...editData, avatar: file });
 
-            // Create preview URL
             const previewUrl = URL.createObjectURL(file);
             setAvatarPreview(previewUrl);
         }
@@ -103,7 +101,6 @@ export function UserPage() {
     const removeAvatar = () => {
         setEditData({ ...editData, avatar: null });
         setAvatarPreview(null);
-        // Clear file input
         const fileInput = document.getElementById('avatar-input') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
     };
@@ -117,7 +114,6 @@ export function UserPage() {
         setUpdateSuccess(false);
 
         try {
-            // Filter out empty values
             const formData = new FormData();
 
             if (editData.username && editData.username.trim() !== userProfile.username) {
@@ -150,9 +146,9 @@ export function UserPage() {
             }
 
             setUpdateSuccess(true);
-            reload(); // Reload the profile data
+            reload(); 
 
-            // Close modal after 2 seconds
+          
             setTimeout(() => {
                 handleCloseModal();
             }, 2000);

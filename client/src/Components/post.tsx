@@ -5,7 +5,7 @@ import { timeSince } from "../Static/date.methods";
 import { IPostData } from "../Network/post.api";
 import useFetch from "../Hooks/useFetch";
 import { useAuth } from "../Context/auth.context";
-import '../styles/post.css'; // Import the separated CSS
+import '../styles/post.css'; 
 
 const API_BASE_URL = process.env.NODE_ENV === 'production'
     ? process.env.BASE_URL || 'https://mern-social-two-gamma.vercel.app'
@@ -45,12 +45,9 @@ export function Post({ post }: { post: IPostData }) {
         const previousLikeId = userLike?._id;
 
         try {
-            // Optimistic update
             if (userLike) {
-                // Remove like
                 setLikes(previousLikes.filter(like => like._id !== previousLikeId));
             } else {
-                // Add like
                 const tempLikeId = `temp-${Date.now()}`;
                 setLikes([
                     ...(likes ?? []),
@@ -62,7 +59,6 @@ export function Post({ post }: { post: IPostData }) {
                 ]);
             }
 
-            // Server request
             if (userLike) {
                 await fetch(`${API_BASE_URL}/api/likes/${previousLikeId}`, {
                     method: 'DELETE',
@@ -84,7 +80,6 @@ export function Post({ post }: { post: IPostData }) {
 
                 const newLike = await response.json();
 
-                // Replace temporary like with server-generated like
                 setLikes(prev => [
                     ...prev!.filter(like => !like._id.startsWith('temp-')),
                     newLike
@@ -92,7 +87,6 @@ export function Post({ post }: { post: IPostData }) {
             }
         } catch (error) {
             console.error('Error updating like:', error);
-            // Revert to previous state if request fails
             setLikes(previousLikes);
         }
     }

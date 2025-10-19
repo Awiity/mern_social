@@ -1,10 +1,10 @@
 import React from 'react';
 import { Container, Card, Row, Col, Button, Badge } from 'react-bootstrap';
-import '../styles/home.css'; // Assuming you have a CSS file for additional styles
+import '../styles/home.css'; 
 import { useAuth } from '../Context/auth.context';
 
 const HomePage: React.FC = () => {
-    const {isAuthenticated} = useAuth(); // Assuming you have a useAuth hook for authentication
+    const {isAuthenticated} = useAuth(); 
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#212529' }}>
 

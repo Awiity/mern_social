@@ -4,7 +4,6 @@ import { MessageModel } from '../models/message.model';
 import mongoose from 'mongoose';
 
 export class RoomController {
-    // Create a new room
     async createRoom(req: Request, res: Response): Promise<void> {
         try {
             const validatedData = roomsSchema.parse(req.body);
@@ -22,11 +21,11 @@ export class RoomController {
                 lastActivity: validatedData.lastActivity || new Date()
             });
             room.users?.forEach(user => {
-                // console.log('User in room:', user)
+                console.log('User in room:', user)
             })
 
             const savedRoom = await room.save();
-            // console.log('Room created successfully:', savedRoom);
+            console.log('Room created successfully:', savedRoom);
             res.status(201).json({
                 success: true,
                 message: 'Room created successfully',
@@ -45,7 +44,6 @@ export class RoomController {
         }
     }
 
-    // Get all rooms
     async getAllRooms(req: Request, res: Response): Promise<void> {
         try {
             const page = parseInt(req.query.page as string) || 1;
@@ -59,7 +57,6 @@ export class RoomController {
 
             const totalRooms = await RoomModel.countDocuments();
 
-            // Add user count and message count for each room
             const roomsWithStats = await Promise.all(
                 rooms.map(async (room) => {
                     const messageCount = await MessageModel.countDocuments({ room_id: room._id });
@@ -89,7 +86,6 @@ export class RoomController {
         }
     }
 
-    // Get a specific room by ID
     async getRoomById(req: Request, res: Response): Promise<void> {
         try {
             const { roomId } = req.params;
@@ -105,7 +101,6 @@ export class RoomController {
                 return;
             }
 
-            // Get message count for this room
             const messageCount = await MessageModel.countDocuments({ room_id: roomId });
 
             res.json({
@@ -122,7 +117,6 @@ export class RoomController {
         }
     }
 
-    // Get room by name
     async getRoomByName(req: Request, res: Response): Promise<void> {
         try {
             const { roomName } = req.params;
@@ -138,7 +132,6 @@ export class RoomController {
                 return;
             }
 
-            // Get message count for this room
             const messageCount = await MessageModel.countDocuments({ room_id: room._id });
 
             res.json({
@@ -155,7 +148,6 @@ export class RoomController {
         }
     }
 
-    // Update a room
     async updateRoom(req: Request, res: Response): Promise<void> {
         try {
             const { roomId } = req.params;
@@ -171,7 +163,6 @@ export class RoomController {
                 return;
             }
 
-            // Check if another room with this name exists
             const existingRoom = await RoomModel.findOne({
                 name: name.trim(),
                 _id: { $ne: roomId }
@@ -206,7 +197,6 @@ export class RoomController {
         }
     }
 
-    // Delete a room
     async deleteRoom(req: Request, res: Response): Promise<void> {
         try {
             const { roomId } = req.params;
@@ -222,7 +212,6 @@ export class RoomController {
                 return;
             }
 
-            // Also delete all messages in this room
             await MessageModel.deleteMany({ room_id: roomId });
 
             res.json({
@@ -235,7 +224,6 @@ export class RoomController {
         }
     }
 
-    // Add user to room
     async addUserToRoom(req: Request, res: Response): Promise<void> {
         try {
             const { roomId } = req.params;
@@ -257,14 +245,12 @@ export class RoomController {
                 return;
             }
 
-            // Check if user is already in the room
             const userExists = room.users?.some(u => u.id === user.id);
             if (userExists) {
                 res.status(409).json({ error: 'User already in room' });
                 return;
             }
 
-            // Add user to room
             room.users = room.users || [];
             room.users.push(user);
             room.updatedAt = new Date();
@@ -282,7 +268,6 @@ export class RoomController {
         }
     }
 
-    // Remove user from room
     async removeUserFromRoom(req: Request, res: Response): Promise<void> {
         try {
             const { roomId, userId } = req.params;
@@ -303,7 +288,6 @@ export class RoomController {
                 return;
             }
 
-            // Remove user from room
             const initialUserCount = room.users.length;
             room.users = room.users.filter(u => u.id !== userId);
 
@@ -326,7 +310,6 @@ export class RoomController {
         }
     }
 
-    // Get room statistics
     async getRoomStats(req: Request, res: Response): Promise<void> {
         try {
             const { roomId } = req.params;
@@ -342,13 +325,11 @@ export class RoomController {
                 return;
             }
 
-            // Get message statistics
             const messageCount = await MessageModel.countDocuments({ room_id: roomId });
             const lastMessage = await MessageModel.findOne({ room_id: roomId })
                 .sort({ createdAt: -1 })
                 .populate('user_id', 'username');
 
-            // Get messages per day for the last week
             const lastWeek = new Date();
             lastWeek.setDate(lastWeek.getDate() - 7);
 
@@ -393,7 +374,6 @@ export class RoomController {
         }
     }
 
-    // Search rooms
     async searchRooms(req: Request, res: Response): Promise<void> {
         try {
             const { query } = req.query;
@@ -417,7 +397,6 @@ export class RoomController {
                 name: { $regex: query, $options: 'i' }
             });
 
-            // Add user count and message count for each room
             const roomsWithStats = await Promise.all(
                 rooms.map(async (room) => {
                     const messageCount = await MessageModel.countDocuments({ room_id: room._id });
@@ -451,7 +430,6 @@ export class RoomController {
         try {
             const { userId1, userId2 } = req.body;
 
-            // Check if private room already exists
             const existingRoom = await RoomModel.findOne({
                 type: 'private',
                 'users.id': { $all: [userId1, userId2] }
@@ -462,7 +440,6 @@ export class RoomController {
                 return;
             }
 
-            // Create new private room
             const room = new RoomModel({
                 name: `Private chat`,
                 type: 'private',
@@ -478,7 +455,6 @@ export class RoomController {
         }
     }
 
-    // Get user's rooms
     async getUserRooms(req: Request, res: Response): Promise<void> {
         try {
             const { userId } = req.params;
@@ -496,7 +472,6 @@ export class RoomController {
         }
     }
 
-    // Update room activity
     async updateRoomActivity(roomId: string) {
         await RoomModel.findByIdAndUpdate(roomId, {
             lastActivity: new Date()

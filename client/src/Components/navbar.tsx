@@ -3,11 +3,9 @@ import '../styles/navbar.css'
 import { useAuth } from "../Context/auth.context"
 import { useNavigate } from "react-router";
 import logout_svg from '../Static/SVGs/logout.svg';
-//import { logout } from "../Network/user.api";
 
 const NavbarC = () => {
     const { user: currentUser, logout } = useAuth();
-    //console.log("user: ", user);
     const navigate = useNavigate();
     const handleLogout = async () => {
         try {

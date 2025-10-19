@@ -31,15 +31,13 @@ export function NewsPage() {
     const [filterBy, setFilterBy] = useState<FilterOption>('all');
     const [showFilters, setShowFilters] = useState<boolean>(false);
 
-    const { isAuthenticated } = useAuth(); // Assuming you have a useAuth hook for authentication
+    const { isAuthenticated } = useAuth(); 
 
-    // Memoized filtered and sorted posts
     const filteredAndSortedPosts = useMemo(() => {
         if (!Array.isArray(data)) return [];
 
         let posts = [...data];
 
-        // Apply search filter
         if (searchTerm.trim()) {
             posts = posts.filter(post =>
                 post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,7 +46,6 @@ export function NewsPage() {
             );
         }
 
-        // Apply content filter
         switch (filterBy) {
             case 'with-images':
                 posts = posts.filter(post => post.file);
@@ -60,7 +57,6 @@ export function NewsPage() {
                 break;
         }
 
-        // Apply sorting
         switch (sortBy) {
             case 'newest':
                 posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -69,7 +65,6 @@ export function NewsPage() {
                 posts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
                 break;
             case 'popular':
-                // For now, sort by newest as popularity would require additional data
                 posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 break;
             default:
@@ -79,7 +74,6 @@ export function NewsPage() {
         return posts;
     }, [data, searchTerm, sortBy, filterBy]);
 
-    // Memoized statistics
     const statistics = useMemo(() => {
         if (!Array.isArray(data)) return { total: 0, withImages: 0, textOnly: 0 };
 
@@ -90,7 +84,6 @@ export function NewsPage() {
         };
     }, [data]);
 
-    // Callback handlers
     const handleModalClose = useCallback(() => setShowModal(false), []);
     const handleModalOpen = useCallback(() => setShowModal(true), []);
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +97,6 @@ export function NewsPage() {
     }, []);
     const toggleFilters = useCallback(() => setShowFilters(prev => !prev), []);
 
-    // Clear all filters
     const clearFilters = useCallback(() => {
         setSearchTerm('');
         setSortBy('newest');

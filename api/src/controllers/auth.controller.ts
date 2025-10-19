@@ -31,10 +31,10 @@ export const AuthController = {
             user.refreshToken = refreshToken;
             await user.save();
 
-            // console.log("=== LOGIN DEBUG INFO ===");
-            // console.log("Environment:", process.env.NODE_ENV);
-            // console.log("Cookie options:", cookieOptions);
-            // console.log("Setting cookies...");
+            console.log("=== LOGIN DEBUG INFO ===");
+            console.log("Environment:", process.env.NODE_ENV);
+            console.log("Cookie options:", cookieOptions);
+            console.log("Setting cookies...");
 
             res.cookie("accessToken", accessToken, {
                 ...cookieOptions,
@@ -46,8 +46,8 @@ export const AuthController = {
                 maxAge: 1 * 24 * 60 * 60 * 1000,
             });
 
-            // console.log("Cookies set successfully");
-            // console.log("Response headers:", res.getHeaders());
+            console.log("Cookies set successfully");
+            console.log("Response headers:", res.getHeaders());
 
             req.userId = user.id;
             res.json({
@@ -64,13 +64,12 @@ export const AuthController = {
     },
 
     async register(req: Request, res: Response) {
-        // console.log("register called")
+        console.log("register called")
         try {
             const parsedData = userSchema.parse(req.body);
 
             const existingUser = await UserModel.findOne({ email: parsedData.email });
             if (existingUser) throw new ApiError(409, "Email already exists")
-            // password hashiong
             const salt = await genSalt(SALT_FACTOR);
             const hashedPassword = await bcrypt.hash(parsedData.password, salt);
             parsedData.password = hashedPassword;
@@ -113,7 +112,7 @@ export const AuthController = {
 
             })
             res.status(200).json("token refreshed successfully");
-            // console.log("refreshed token");
+            console.log("refreshed token");
 
         } catch (error) {
 
@@ -147,7 +146,7 @@ export const AuthController = {
     async authme(req: Request, res: Response) {
         try {
             const user = await UserModel.findById(req.userId).select(
-                "_id username email role" // Explicit safe field selection
+                "_id username email role" 
             ).exec();
 
             if (!user) {
@@ -156,7 +155,6 @@ export const AuthController = {
                 throw new ApiError(404, "User not found");
             }
 
-            // 3. Return sanitized user data
             res.status(200).json(user);
         } catch (error) {
             ApiError.handle(error, res);

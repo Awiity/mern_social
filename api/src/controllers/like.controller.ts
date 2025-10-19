@@ -2,11 +2,7 @@ import { Request, Response } from 'express';
 import { LikeModel } from '../models/likes.model';
 
 export class LikeController {
-    // Add methods for handling likes here
-    // For example:
-    // async createLike(req, res) { ... }
-    // async deleteLike(req, res) { ... }
-    // async getLikes(req, res) { ... }
+
     async createLike(req: Request, res: Response) {
         try {
             const { user_id, post_id } = req.body;

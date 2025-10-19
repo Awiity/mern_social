@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// types/sse.types.ts
 export interface SSEMessage {
     type: 'message' | 'user-joined' | 'user-left' | 'typing' | 'room-users' | 'error' | 'connection' | 'heartbeat';
     data: any;
@@ -41,7 +40,6 @@ export interface EventHandlers {
 
 
 
-// services/sse.service.ts
 export class SSEService {
     private eventSource: EventSource | null = null;
     private userId: string;
@@ -62,27 +60,38 @@ export class SSEService {
         this.username = options.username;
         this.baseUrl = options.baseUrl + '/api/sse';
     }
-
     async connect(): Promise<boolean> {
-        if (this.isConnected || this.eventSource?.readyState === EventSource.OPEN) {
+        if (this.isConnected || this.isConnectionOpen()) {
             return true;
         }
 
-        // Unique URL to disable native auto-reconnect
-        const url = `${this.baseUrl}/connect?userId=${encodeURIComponent(this.userId)}&username=${encodeURIComponent(this.username)}&t=${Date.now()}`;
-        this.eventSource = new EventSource(url);
-        this.setupEventListeners();
+        try {
+            const url = `${this.baseUrl}/connect?userId=${encodeURIComponent(this.userId)}&username=${encodeURIComponent(this.username)}&t=${Date.now()}`;
 
-        return new Promise<boolean>((resolve) => {
-            const onConnection = () => {
-                this.isConnected = true;
-                this.reconnectAttempts = 0;
-                console.log('SSE connected successfully');
-                resolve(true);
-            };
-            this.eventSource!.addEventListener('connection', onConnection, { once: true });
-            // No error listener here — handled in setupEventListeners
-        });
+            this.eventSource = new EventSource(url);
+            this.setupEventListeners();
+
+            return new Promise((resolve) => {
+                const onConnection = () => {
+                    this.isConnected = true;
+                    this.reconnectAttempts = 0;
+                    console.log('SSE connected successfully');
+                    resolve(true);
+                };
+
+                this.eventSource?.addEventListener('connection', onConnection, { once: true });
+
+                if (this.eventSource) {
+                    this.eventSource.onerror = () => {
+                        this.handleConnectionError();
+                    };
+                }
+            });
+        } catch (error) {
+            console.error('Failed to initialize SSE connection:', error);
+            this.handleConnectionError();
+            return false;
+        }
     }
 
     private setupEventListeners(): void {
@@ -90,50 +99,44 @@ export class SSEService {
 
         this.eventSource.addEventListener('connection', (event) => {
             const data = JSON.parse(event.data);
-            //console.log('Connected to SSE:', data);
+            console.log('Connected to SSE:', data);
             this.eventHandlers.onConnection?.(data);
         });
 
-        // Message events
         this.eventSource.addEventListener('message', (event) => {
-            //console.log('Message event received:', event);
+            console.log('Message event received:', event);
             const data = JSON.parse(event.data);
-            //console.log('New message:', data);
+            console.log('New message:', data);
             this.eventHandlers.onMessage?.(data);
         });
 
-        // User joined events
         this.eventSource.addEventListener('user-joined', (event) => {
-            //console.log('User joined event received:', event);
+            console.log('User joined event received:', event);
             const data = JSON.parse(event.data);
-            //console.log('User joined:', data);
+            console.log('User joined:', data);
             this.eventHandlers.onUserJoined?.(data);
         });
 
-        // User left events
         this.eventSource.addEventListener('user-left', (event) => {
-            //console.log('User left event received:', event);
+            console.log('User left event received:', event);
             const data = JSON.parse(event.data);
-            //console.log('User left:', data);
+            console.log('User left:', data);
             this.eventHandlers.onUserLeft?.(data);
         });
 
-        // Typing events
         this.eventSource.addEventListener('typing', (event) => {
-            //console.log('Typing event received:', event);
+            console.log('Typing event received:', event);
             const data = JSON.parse(event.data);
             this.eventHandlers.onTyping?.(data);
         });
 
-        // Room users update events
         this.eventSource.addEventListener('room-users', (event) => {
-            //console.log('Room users update event received:', event);
+            console.log('Room users update event received:', event);
             const data = JSON.parse(event.data);
-            //console.log('Room users updated:', data);
+            console.log('Room users updated:', data);
             this.eventHandlers.onRoomUsers?.(data);
         });
 
-        // Error events
         this.eventSource.addEventListener('error', (event: MessageEvent) => {
             console.error('SSE error event received:', event);
             const data = JSON.parse(event.data);
@@ -141,54 +144,56 @@ export class SSEService {
             this.eventHandlers.onError?.(data);
         });
 
-        // Heartbeat events
         this.eventSource.addEventListener('heartbeat', (event) => {
-            //console.log('Heartbeat received', event);
+            console.log('Heartbeat received', event);
             const data = JSON.parse(event.data);
             this.eventHandlers.onHeartbeat?.(data);
         });
 
-        // Handle connection errors and reconnection
         this.eventSource.onerror = (error) => {
             console.error('EventSource error:', error);
             this.handleConnectionError();
         };
-        
+
     }
 
-    // Handle connection errors and implement reconnection logic
     private handleConnectionError(): void {
         this.isConnected = false;
 
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+        }
+
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-
-            // Exponential backoff with jitter to avoid thundering herd
             const baseDelay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-            const jitter = Math.random() * 1000; // Add up to 1 second jitter
-            const delay = Math.min(baseDelay + jitter, 30000); // Cap at 30 seconds
+            const jitter = Math.random() * 1000; // up to 1s extra
+            const delay = Math.min(baseDelay + jitter, 30000); // cap at 30s
 
             console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${Math.round(delay)}ms...`);
 
             this.reconnectTimeout = setTimeout(() => {
-                this.disconnect();
                 this.connect().catch(error => {
-                    console.error('Reconnection failed:', error);
+                    console.error('Reconnection attempt failed:', error);
                 });
             }, delay);
         } else {
-            console.error('Max reconnection attempts reached');
+            console.error('Max reconnection attempts reached. Giving up.');
             this.eventHandlers.onError?.({ message: 'Connection lost and unable to reconnect' });
-            this.reconnectAttempts = 0; // Reset for future attempts
+            this.reconnectAttempts = 0;
         }
     }
 
-    // Set event handlers
     setEventHandlers(handlers: EventHandlers): void {
         this.eventHandlers = { ...this.eventHandlers, ...handlers };
     }
 
-    // Join a room
     async joinRoom(roomId: string, roomName: string): Promise<boolean> {
         try {
             const response = await fetch(`${this.baseUrl}/join-room`, {
@@ -207,7 +212,7 @@ export class SSEService {
 
             if (result.success) {
                 this.currentRoomId = roomId;
-                //console.log(`Successfully joined room: ${roomName}`);
+                console.log(`Successfully joined room: ${roomName}`);
                 return true;
             } else {
                 console.error('Failed to join room:', result.message);
@@ -219,7 +224,6 @@ export class SSEService {
         }
     }
 
-    // Leave current room
     async leaveRoom(): Promise<boolean> {
         if (!this.currentRoomId) {
             console.warn('No room to leave');
@@ -241,7 +245,7 @@ export class SSEService {
             const result = await response.json();
 
             if (result.success) {
-                //console.log('Successfully left room');
+                console.log('Successfully left room');
                 this.currentRoomId = null;
                 return true;
             } else {
@@ -254,7 +258,6 @@ export class SSEService {
         }
     }
 
-    // Send typing indicator
     async sendTyping(isTyping: boolean): Promise<boolean> {
         if (!this.currentRoomId) {
             console.warn('Not in a room, cannot send typing indicator');
@@ -282,7 +285,6 @@ export class SSEService {
         }
     }
 
-    // Get room information
     async getRoomInfo(roomId: string): Promise<RoomInfo | null> {
         try {
             const response = await fetch(`${this.baseUrl}/room/${roomId}`);
@@ -300,7 +302,6 @@ export class SSEService {
         }
     }
 
-    // Get all active rooms
     async getAllRooms(): Promise<RoomInfo[]> {
         try {
             const response = await fetch(`${this.baseUrl}/rooms`);
@@ -318,7 +319,6 @@ export class SSEService {
         }
     }
 
-    // Get SSE statistics
     async getStats(): Promise<any> {
         try {
             const response = await fetch(`${this.baseUrl}/stats`);
@@ -336,7 +336,6 @@ export class SSEService {
         }
     }
 
-    // Disconnect from SSE
     disconnect(): void {
         if (this.reconnectTimeout) {
             clearTimeout(this.reconnectTimeout);
@@ -345,23 +344,20 @@ export class SSEService {
         if (this.eventSource) {
             this.eventSource.close();
             this.eventSource = null;
-            this.isConnected = false;
-            this.currentRoomId = null;
-            //console.log('SSE connection closed ...');
         }
+        this.isConnected = false;
+        this.currentRoomId = null;
+        this.reconnectAttempts = 0;
     }
 
-    // Get connection status
     isConnectionOpen(): boolean {
         return this.isConnected && this.eventSource?.readyState === EventSource.OPEN;
     }
 
-    // Get current room ID
     getCurrentRoomId(): string | null {
         return this.currentRoomId;
     }
 
-    // Get user info
     getUserInfo() {
         return {
             userId: this.userId,
@@ -370,14 +366,12 @@ export class SSEService {
     }
 }
 
-// Utility functions for managing multiple SSE connections or creating singletons
 export class SSEManager {
     private static instances: Map<string, SSEService> = new Map();
 
     static createConnection(userId: string, username: string, baseUrl?: string): SSEService {
         const key = `${userId}_${username}`;
 
-        // Close existing connection for this user
         if (this.instances.has(key)) {
             this.instances.get(key)?.disconnect();
         }

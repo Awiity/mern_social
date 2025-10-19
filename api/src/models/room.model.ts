@@ -44,4 +44,3 @@ const roomSchema = new mongoose.Schema<IRoomDocument>({
 });
 
 export const RoomModel = mongoose.model<IRoomDocument>('Room', roomSchema);
-// This code defines the Room model for a chat application using Mongoose and Zod for validation.

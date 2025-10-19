@@ -54,12 +54,9 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
             formData.append('title', post.title);
             formData.append('body', post.body);
             formData.append('user_id', user._id);
-            //console.log("post: ", formData.get('title'), formData.get('body'), formData.get('user_id'));
             if (post.file) formData.append('post_file', post.file);
             const response = await postNew(formData);
-            //console.log(response);
             if (response?.statusText === "OK") {
-                //console.log("post created ", response);
                 setResMsg("Post has been successfully created");
             };
             if (posts instanceof Array) setPosts([response.data, ...posts]);
@@ -71,7 +68,6 @@ const AddPostModal: React.FC<ModalComponentProps> = ({ show, onClose, posts, set
 
         } catch (error) {
             if (error instanceof AxiosError) {
-                //console.log(error);
                 setError(error);
             }
         } finally {

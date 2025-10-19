@@ -14,9 +14,9 @@ export class MessageController {
 
     async createMessage(req: Request, res: Response) {
         try {
-            // console.log('Creating message with data:', req.body);
+            console.log('Creating message with data:', req.body);
             const validatedData = messageSchema.parse(req.body);
-            // console.log('Message incoming: ', validatedData);
+            console.log('Message incoming: ', validatedData);
 
             const roomExists = await RoomModel.findById(validatedData.room_id);
             if (!roomExists) {
@@ -36,7 +36,6 @@ export class MessageController {
             await savedMessage.populate('user_id', 'username email');
             await savedMessage.populate('room_id', 'name');
 
-            // Send real-time message via SSE
             const messageData = {
                 id: savedMessage._id,
                 content: savedMessage.content,
@@ -71,7 +70,6 @@ export class MessageController {
         }
     }
 
-    // Get messages for a specific room with pagination
     async getMessagesByRoom(req: Request, res: Response) {
         try {
             const { roomId } = req.params;
@@ -79,7 +77,6 @@ export class MessageController {
             const limit = parseInt(req.query.limit as string) || 50;
             const skip = (page - 1) * limit;
 
-            // Validate ObjectId
             if (!mongoose.Types.ObjectId.isValid(roomId)) {
                 return res.status(400).json({
                     success: false,
@@ -87,7 +84,6 @@ export class MessageController {
                 });
             }
 
-            // Check if room exists
             const roomExists = await RoomModel.findById(roomId);
             if (!roomExists) {
                 return res.status(404).json({
@@ -109,7 +105,7 @@ export class MessageController {
             res.status(200).json({
                 success: true,
                 data: {
-                    messages: messages.reverse(), // Reverse to show oldest first
+                    messages: messages.reverse(), 
                     pagination: {
                         currentPage: page,
                         totalPages,
@@ -129,12 +125,10 @@ export class MessageController {
         }
     }
 
-    // Get a specific message by ID
     async getMessageById(req: Request, res: Response) {
         try {
             const { messageId } = req.params;
 
-            // Validate ObjectId
             if (!mongoose.Types.ObjectId.isValid(messageId)) {
                 return res.status(400).json({
                     success: false,
@@ -166,13 +160,11 @@ export class MessageController {
         }
     }
 
-    // Update a message (only content can be updated)
     async updateMessage(req: Request, res: Response) {
         try {
             const { messageId } = req.params;
             const { content } = req.body;
 
-            // Validate ObjectId
             if (!mongoose.Types.ObjectId.isValid(messageId)) {
                 return res.status(400).json({
                     success: false,
@@ -180,7 +172,6 @@ export class MessageController {
                 });
             }
 
-            // Validate content
             if (!content || content.trim().length === 0) {
                 return res.status(400).json({
                     success: false,
@@ -196,7 +187,6 @@ export class MessageController {
                 });
             }
 
-            // Update message
             message.content = content.trim();
             message.updatedAt = new Date();
             await message.save();
@@ -218,12 +208,10 @@ export class MessageController {
         }
     }
 
-    // Delete a message
     async deleteMessage(req: Request, res: Response) {
         try {
             const { messageId } = req.params;
 
-            // Validate ObjectId
             if (!mongoose.Types.ObjectId.isValid(messageId)) {
                 return res.status(400).json({
                     success: false,
@@ -254,7 +242,6 @@ export class MessageController {
         }
     }
 
-    // Get messages by user
     async getMessagesByUser(req: Request, res: Response) {
         try {
             const { userId } = req.params;
@@ -262,7 +249,6 @@ export class MessageController {
             const limit = parseInt(req.query.limit as string) || 50;
             const skip = (page - 1) * limit;
 
-            // Validate ObjectId
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({
                     success: false,
@@ -303,13 +289,11 @@ export class MessageController {
         }
     }
 
-    // Search messages in a room
     async searchMessages(req: Request, res: Response) {
         try {
             const { roomId } = req.params;
             const { query, page = 1, limit = 20 } = req.query;
 
-            // Validate ObjectId
             if (!mongoose.Types.ObjectId.isValid(roomId)) {
                 return res.status(400).json({
                     success: false,

@@ -29,7 +29,6 @@ export class RoomManager {
                 }
             });
 
-            // Remove empty rooms
             if (room.users.size === 0) {
                 this.rooms.delete(roomName);
             }
@@ -63,7 +62,6 @@ export class RoomManager {
                 }
             });
 
-            // Remove empty rooms
             if (room.users.size === 0) {
                 this.rooms.delete(roomName);
             }

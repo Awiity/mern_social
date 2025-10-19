@@ -30,10 +30,8 @@ export interface UseSSEReturn {
 export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
     const { userId, username, baseUrl, autoConnect = true } = options;
 
-    // Use ref to persist service instance across renders
     const sseServiceRef = useRef<SSEService | null>(null);
 
-    // Initialize service only once
     if (!sseServiceRef.current) {
         sseServiceRef.current = new SSEService({ userId, username, baseUrl });
     }
@@ -48,11 +46,10 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
     const [messages, setMessages] = useState<any[]>([]);
 
     const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
-    const hasConnectedRef = useRef(false); // Track if we've ever connected
+    const hasConnectedRef = useRef(false); 
 
     const handlersRef = useRef<EventHandlers>({});
 
-    // Initialize handlers once
     useEffect(() => {
         handlersRef.current = {
             onConnection: () => {
@@ -75,7 +72,6 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             onTyping: (data) => {
                 const { username: typingUsername, userId: typingUserId, isTyping } = data;
 
-                // Use ref for current userId to avoid stale closure
                 if (typingUserId === userIdRef.current) return;
 
                 if (isTyping) {
@@ -118,18 +114,16 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
         };
 
         sseServiceRef.current?.setEventHandlers(handlersRef.current);
-    }, []); // Empty dependencies - setup once
+    }, []); 
 
     const userIdRef = useRef(userId);
     useEffect(() => {
         userIdRef.current = userId;
     }, [userId]);
 
-    // Connect function - stable reference
     const connect = useCallback(async (): Promise<boolean> => {
         if (!sseServiceRef.current) return false;
 
-        // Prevent multiple simultaneous connection attempts
         if (isConnecting || isConnected || sseServiceRef.current.isConnectionOpen()) {
             return isConnected;
         }
@@ -152,9 +146,8 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
             setIsConnected(false);
             return false;
         }
-    }, [isConnecting, isConnected]);
+    }, []);
 
-    // Disconnect function - stable reference
     const disconnect = useCallback(() => {
         if (!sseServiceRef.current) return;
 
@@ -245,7 +238,6 @@ export const useSSE = (options: UseSSEOptions): UseSSEReturn => {
         };
     }, [autoConnect, connect, disconnect]);
 
-    // Update current room ID from service
     useEffect(() => {
         if (sseServiceRef.current) {
             const roomId = sseServiceRef.current.getCurrentRoomId();

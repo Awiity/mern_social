@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { EventEmitter } from 'events';
 
-// SSE Event types
 export interface SSEMessage {
     type: 'message' | 'user-joined' | 'user-left' | 'typing' | 'room-users' | 'error' | 'connection' | 'heartbeat';
     data: any;
@@ -10,7 +9,6 @@ export interface SSEMessage {
     timestamp?: Date;
 }
 
-// Client connection interface
 interface SSEClient {
     id: string;
     userId: string;
@@ -21,7 +19,6 @@ interface SSEClient {
     heartbeatInterval?: NodeJS.Timeout;
 }
 
-// Room management
 interface RoomData {
     id: string;
     name: string;
@@ -38,7 +35,6 @@ class SSEManager {
     private connectionAttempts: Map<string, number> = new Map();
 
     constructor() {
-        // Cleanup inactive connections every 2 minutes
         this.cleanupInterval = setInterval(() => {
             this.cleanup();
         }, 2 * 60 * 1000);
@@ -51,7 +47,6 @@ class SSEManager {
         return SSEManager.instance;
     }
 
-    // Add client connection
     addClient(clientId: string, userId: string, username: string, response: Response): void {
 
         const attempts = this.connectionAttempts.get(userId) || 0;
@@ -74,17 +69,15 @@ class SSEManager {
 
         this.clients.set(clientId, client);
 
-        // Setup SSE headers
         response.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Headers': 'Cache-Control',
-            'X-Accel-Buffering': 'no' // Disable nginx buffering
+            'X-Accel-Buffering': 'no' 
         });
 
-        // Send initial connection message
         this.sendToClient(clientId, {
             type: 'connection',
             data: {
@@ -96,7 +89,6 @@ class SSEManager {
             timestamp: new Date()
         });
 
-        // Setup heartbeat
         client.heartbeatInterval = setInterval(() => {
             if (this.clients.has(clientId)) {
                 try {
@@ -107,11 +99,10 @@ class SSEManager {
                     this.removeClient(clientId);
                 }
             }
-        }, 60000); // Send heartbeat every 30 -> 60 changed to fix rate limit issues.
+        }, 60000); 
 
-        // Handle client disconnect
         response.on('close', () => {
-            // console.log(`Client ${clientId} disconnected`);
+            console.log(`Client ${clientId} disconnected`);
             this.removeClient(clientId);
         });
 
@@ -120,10 +111,9 @@ class SSEManager {
             this.removeClient(clientId);
         });
 
-        // console.log(`Client ${clientId} (${username}) connected`);
+        console.log(`Client ${clientId} (${username}) connected`);
     }
 
-    // Remove client by userId (for preventing duplicates)
     private removeClientByUserId(userId: string): void {
         for (const [clientId, client] of this.clients) {
             if (client.userId === userId) {
@@ -133,21 +123,17 @@ class SSEManager {
         }
     }
 
-    // Remove client connection
     removeClient(clientId: string): void {
         const client = this.clients.get(clientId);
         if (client) {
-            // Clear heartbeat
             if (client.heartbeatInterval) {
                 clearInterval(client.heartbeatInterval);
             }
 
-            // Leave room if user was in one
             if (client.roomId) {
                 this.leaveRoom(clientId, client.roomId);
             }
 
-            // Close response if still open
             try {
                 if (!client.response.destroyed) {
                     client.response.end();
@@ -157,11 +143,10 @@ class SSEManager {
             }
 
             this.clients.delete(clientId);
-            // console.log(`Client ${clientId} removed`);
+            console.log(`Client ${clientId} removed`);
         }
     }
 
-    // Join room
     joinRoom(clientId: string, roomId: string, roomName: string): boolean {
         const client = this.clients.get(clientId);
         if (!client) {
@@ -169,12 +154,10 @@ class SSEManager {
             return false;
         }
 
-        // Leave current room if any
         if (client.roomId && client.roomId !== roomId) {
             this.leaveRoom(clientId, client.roomId);
         }
 
-        // Create room if it doesn't exist
         if (!this.rooms.has(roomId)) {
             this.rooms.set(roomId, {
                 id: roomId,
@@ -186,13 +169,11 @@ class SSEManager {
 
         const room = this.rooms.get(roomId)!;
 
-        // Check if user is already in room
         if (room.users.has(client.userId)) {
-            // console.log(`User ${client.username} already in room ${roomName}`);
+            console.log(`User ${client.username} already in room ${roomName}`);
             return true;
         }
 
-        // Add user to room
         room.users.set(client.userId, {
             userId: client.userId,
             username: client.username,
@@ -200,11 +181,9 @@ class SSEManager {
             joinedAt: new Date()
         });
 
-        // Update client room
         client.roomId = roomId;
         this.clients.set(clientId, client);
 
-        // Notify room about new user
         this.broadcastToRoom(roomId, {
             type: 'user-joined',
             data: {
@@ -215,42 +194,36 @@ class SSEManager {
                 roomName: roomName
             },
             timestamp: new Date()
-        }, clientId); // Exclude the user who joined
+        }, clientId); 
 
-        // Send updated user list to room
         this.broadcastRoomUsers(roomId);
 
-        // console.log(`User ${client.username} joined room ${roomName}`);
+        console.log(`User ${client.username} joined room ${roomName}`);
         return true;
     }
 
-    // Leave room
     leaveRoom(clientId: string, roomId: string): boolean {
         const client = this.clients.get(clientId);
         const room = this.rooms.get(roomId);
 
         if (!client || !room) return false;
 
-        // Remove user from room
         const wasInRoom = room.users.delete(client.userId);
         if (!wasInRoom) return false;
 
         client.roomId = undefined;
 
-        // Send updated user list to room
         this.broadcastRoomUsers(roomId);
 
-        // Remove room if empty
         if (room.users.size === 0) {
             this.rooms.delete(roomId);
-            // console.log(`Room ${roomId} deleted (empty)`);
+            console.log(`Room ${roomId} deleted (empty)`);
         }
 
-        // console.log(`User ${client.username} left room ${roomId}`);
+        console.log(`User ${client.username} left room ${roomId}`);
         return true;
     }
 
-    // Send message to specific client
     sendToClient(clientId: string, message: SSEMessage): boolean {
         const client = this.clients.get(clientId);
         if (!client) return false;
@@ -272,7 +245,6 @@ class SSEManager {
         }
     }
 
-    // Broadcast message to all clients in a room
     broadcastToRoom(roomId: string, message: SSEMessage, excludeClientId?: string): number {
         const room = this.rooms.get(roomId);
         if (!room) return 0;
@@ -288,7 +260,6 @@ class SSEManager {
         return sentCount;
     }
 
-    // Broadcast room users to all clients in room
     broadcastRoomUsers(roomId: string): void {
         const room = this.rooms.get(roomId);
         if (!room) return;
@@ -310,7 +281,6 @@ class SSEManager {
         });
     }
 
-    // Send typing indicator
     sendTyping(clientId: string, roomId: string, isTyping: boolean): boolean {
         const client = this.clients.get(clientId);
         if (!client || client.roomId !== roomId) return false;
@@ -324,12 +294,11 @@ class SSEManager {
                 isTyping
             },
             timestamp: new Date()
-        }, clientId); // Exclude sender
+        }, clientId); 
 
         return sentCount > 0;
     }
 
-    // Send new message to room
     sendMessageToRoom(roomId: string, messageData: any): number {
         return this.broadcastToRoom(roomId, {
             type: 'message',
@@ -338,7 +307,6 @@ class SSEManager {
         });
     }
 
-    // Get room info
     getRoomInfo(roomId: string) {
         const room = this.rooms.get(roomId);
         if (!room) return null;
@@ -356,7 +324,6 @@ class SSEManager {
         };
     }
 
-    // Get all rooms
     getAllRooms() {
         return Array.from(this.rooms.values()).map(room => ({
             id: room.id,
@@ -371,12 +338,10 @@ class SSEManager {
         }));
     }
 
-    // Get client info
     getClientInfo(clientId: string) {
         return this.clients.get(clientId);
     }
 
-    // Get all clients
     getAllClients() {
         return Array.from(this.clients.values()).map(client => ({
             id: client.id,
@@ -387,7 +352,6 @@ class SSEManager {
         }));
     }
 
-    // Get statistics
     getStats() {
         return {
             totalClients: this.clients.size,
@@ -400,10 +364,9 @@ class SSEManager {
         };
     }
 
-    // Cleanup inactive connections
     cleanup(): void {
         const now = new Date();
-        const timeout = 10 * 60 * 1000; // 10 minutes
+        const timeout = 10 * 60 * 1000; 
 
         const clientsToRemove: string[] = [];
 
@@ -414,27 +377,25 @@ class SSEManager {
         });
 
         clientsToRemove.forEach(clientId => {
-            // console.log(`Cleaning up inactive client: ${clientId}`);
+            console.log(`Cleaning up inactive client: ${clientId}`);
             this.removeClient(clientId);
         });
 
         if (clientsToRemove.length > 0) {
-            // console.log(`Cleaned up ${clientsToRemove.length} inactive connections`);
+            console.log(`Cleaned up ${clientsToRemove.length} inactive connections`);
         }
     }
 
-    // Shutdown cleanup
     shutdown(): void {
         if (this.cleanupInterval) {
             clearInterval(this.cleanupInterval);
         }
 
-        // Close all client connections
         this.clients.forEach((client, clientId) => {
             this.removeClient(clientId);
         });
 
-        // console.log('SSE Manager shutdown complete');
+        console.log('SSE Manager shutdown complete');
     }
 }
 
@@ -446,11 +407,10 @@ export class SSEController {
         this.sseManager = SSEManager.getInstance();
     }
 
-    // SSE connection endpoint
     connect = (req: Request, res: Response): void => {
         console.log('GET /api/connect');
         const { userId, username } = req.query;
-        // console.log(`SSE connection request from userId: ${userId}, username: ${username}`);
+        console.log(`SSE connection request from userId: ${userId}, username: ${username}`);
 
         if (!userId || !username) {
             res.status(400).json({
@@ -477,7 +437,6 @@ export class SSEController {
         }
     }
 
-    // Join room endpoint
     joinRoom = (req: Request, res: Response): void => {
         try {
             const { userId, roomId, roomName } = req.body;
@@ -489,7 +448,6 @@ export class SSEController {
                 });
             }
 
-            // Find client by userId
             const client = Array.from(this.sseManager.getAllClients()).find(c => c.userId === userId);
             if (!client) {
                 res.status(404).json({
@@ -526,7 +484,6 @@ export class SSEController {
         }
     }
 
-    // Leave room endpoint
     leaveRoom = (req: Request, res: Response): void => {
         try {
             const { userId, roomId } = req.body;
@@ -538,7 +495,6 @@ export class SSEController {
                 });
             }
 
-            // Find client by userId
             const client = Array.from(this.sseManager.getAllClients()).find(c => c.userId === userId);
             if (!client) {
                 res.status(404).json({
@@ -570,7 +526,6 @@ export class SSEController {
         }
     }
 
-    // Send typing indicator
     sendTyping = (req: Request, res: Response): void => {
         try {
             const { userId, roomId, isTyping } = req.body;
@@ -582,7 +537,6 @@ export class SSEController {
                 });
             }
 
-            // Find client by userId
             const client = Array.from(this.sseManager.getAllClients()).find(c => c.userId === userId);
             if (!client) {
                 res.status(404).json({
@@ -608,12 +562,10 @@ export class SSEController {
         }
     }
 
-    // Send message to room (called after message is saved to DB)
     sendMessageToRoom = (roomId: string, messageData: any): number => {
         return this.sseManager.sendMessageToRoom(roomId, messageData);
     }
 
-    // Get room info
     getRoomInfo = (req: Request, res: Response): void => {
         try {
             const { roomId } = req.params;
@@ -640,7 +592,6 @@ export class SSEController {
         }
     }
 
-    // Get all active rooms
     getAllRooms = async (req: Request, res: Response) => {
         try {
             const rooms = this.sseManager.getAllRooms();
@@ -657,7 +608,6 @@ export class SSEController {
         }
     }
 
-    // Get SSE statistics
     getStats = async (req: Request, res: Response) => {
         try {
             const stats = this.sseManager.getStats();
@@ -674,7 +624,6 @@ export class SSEController {
         }
     }
 
-    // Get all connected clients
     getClients = async (req: Request, res: Response) => {
         try {
             const clients = this.sseManager.getAllClients();

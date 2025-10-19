@@ -19,7 +19,7 @@ export const RegisterPage: React.FC = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'user' // Default role
+        role: 'user' 
     });
     const [showAlert, setShowAlert] = useState<boolean>(false);
     const [passwordMatch, setPasswordMatch] = useState<boolean>(true);
@@ -31,7 +31,6 @@ export const RegisterPage: React.FC = () => {
             [name]: value
         }));
 
-        // Check password match
         if (name === 'password' || name === 'confirmPassword') {
             if (name === 'password') {
                 setPasswordMatch(value === formData.confirmPassword || formData.confirmPassword === '');

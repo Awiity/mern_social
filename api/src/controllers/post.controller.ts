@@ -63,7 +63,7 @@ export const PostController = {
 
     async getAll(req: Request, res: Response) {
         try {
-            const posts = await PostModel.find().populate('user_id', 'username _id').sort({ createdAt: -1 }); // [0...n] 0 - latest post
+            const posts = await PostModel.find().populate('user_id', 'username _id').sort({ createdAt: -1 }); 
             res.status(200).json(posts);
         } catch (error) {
             ApiError.handle(error, res);
@@ -100,7 +100,6 @@ export const PostController = {
             const post = await PostModel.findById(req.params.id);
             if (!post) throw new ApiError(404, "Post not found.");
 
-            // Implement permission check.
             if (req.userId !== String(updatedPost.user_id) || req.role !== 'admin') throw new ApiError(403, "Not enough permissions.");
 
             Object.assign(post, updatedPost);

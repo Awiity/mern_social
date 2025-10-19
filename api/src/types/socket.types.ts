@@ -57,7 +57,6 @@ export interface RoomUsersData {
     users: User[];
 }
 
-// Socket.io server-to-client events
 export interface ServerToClientEvents {
     'receive-message': (data: ChatMessage) => void;
     'user-joined': (data: UserJoinedData) => void;
@@ -67,7 +66,6 @@ export interface ServerToClientEvents {
     'error': (message: string) => void;
 }
 
-// Socket.io client-to-server events
 export interface ClientToServerEvents {
     'join-room': (data: JoinRoomData) => void;
     'leave-room': (roomName: string) => void;
@@ -76,12 +74,10 @@ export interface ClientToServerEvents {
     'stop-typing': (data: Omit<TypingData, 'isTyping'>) => void;
 }
 
-// Socket.io inter-server events
 export interface InterServerEvents {
     ping: () => void;
 }
 
-// Socket data
 export interface SocketData {
     userId: string;
     username: string;
