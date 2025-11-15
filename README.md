@@ -3,6 +3,7 @@
 A full-stack social media application built with **MongoDB**, **Express**, **React**, and **Node.js** (MERN).  
 Includes real-time chat, image uploads, user roles, and more.
 
+https://the-opal.vercel.app
 
 ---
 
