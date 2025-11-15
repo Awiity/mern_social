@@ -12,7 +12,7 @@ Includes real-time chat, image uploads, user roles, and more.
 |-------------|--------------------------------------------------|
 | Backend     | Node.js, Express, TypeScript, MongoDB, Mongoose |
 | Frontend    | React, Vite, TypeScript, React-Bootstrap         |
-| Real-time   | Socket.IO                                         |
+| Real-time   | SSE                                         |
 | Storage     | Cloudinary (for image uploads)                  |
 | Auth & Sec  | JSON Web Tokens, Cookie-based auth               |
 | Testing     | Jest (backend)                                    |
